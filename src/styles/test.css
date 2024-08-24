@@ -1,0 +1,21 @@
+.test {
+    display: flex;
+    flex-direction: row;
+}
+
+.red {
+    background-color: red;
+}
+
+.yellow {
+    color: black;
+    background-color: yellow;
+}
+
+.green {
+    background-color: green;
+}
+
+.black {
+    background-color: black;
+}
