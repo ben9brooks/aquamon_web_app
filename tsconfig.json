@@ -12,6 +12,7 @@
     "jsx": "react-jsx",
     "sourceMap": true,
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true ,
     "esModuleInterop": true,
   }

@@ -15,14 +15,18 @@ const dummy: Sensors = {
 
 async function fetchSensorData(): Promise<Sensors> {
   const addr = 'http://192.168.0.175/sensors';
+  const mockAddr = 'https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors';
   try {
-    console.log("fetching", addr);
-    const response = await fetch(addr);
+    //console.log("fetching", addr);
+    //const response = await fetch(addr);
+    console.log("fetching", mockAddr);
+    const response = await fetch(mockAddr);
     console.log("response", response);
     if( response.status >= 200 && response.status < 300 ) {
       const data = await response.json(); 
       console.log("returning data and setting sensor var", data);
-      return data;
+      //return data;
+      return data[0];
     }
   } catch (e) {
     console.log("Error:", e);
@@ -53,6 +57,7 @@ function Sensors() {
       try {
         const data = await fetchSensorData();
         setSensorData(data);
+        debugger;
       } catch (error) {
         console.log("got error while fetching", error);
         // setError(error.message);
