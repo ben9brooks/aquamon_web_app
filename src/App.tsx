@@ -1,6 +1,8 @@
 import { GlobalStyle } from './styles/GlobalStyle'
 import { useState, useEffect } from 'react';
 
+// let debug_mode = false;
+
 interface Sensors {
   temp: number;
   ph: number;
@@ -13,24 +15,33 @@ const dummy: Sensors = {
   tds: 999
 };
 
-async function fetchSensorData(): Promise<Sensors> {
+async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
   const addr = 'http://192.168.0.175/sensors';
   const mockAddr = 'https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors';
-  try {
-    //console.log("fetching", addr);
-    //const response = await fetch(addr);
+  console.log("Debug Mode is", isDebug);
+  if(isDebug) {
     console.log("fetching", mockAddr);
     const response = await fetch(mockAddr);
     console.log("response", response);
     if( response.status >= 200 && response.status < 300 ) {
       const data = await response.json(); 
       console.log("returning data and setting sensor var", data);
-      //return data;
       return data[0];
     }
-  } catch (e) {
-    console.log("Error:", e);
+  } else {
+    console.log("fetching", addr);
+    const response = await fetch(addr);
+    console.log("response", response);
+    if( response.status >= 200 && response.status < 300 ) {
+      const data = await response.json(); 
+      console.log("returning data and setting sensor var", data);
+      return data;
+    }
   }
+
+  // } catch (e) {
+  //   console.log("Error:", e);
+  // }
   return dummy;
 }
 
@@ -48,16 +59,16 @@ function getSensorClasses(val: number, warn_min: number, warn_max: number, hard_
   return classes
 }
 
-function Sensors() {
+function Sensors({isDebug}: {isDebug: boolean}) {
   const [sensor, setSensorData] = useState<Sensors>(dummy);
   // const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const data = await fetchSensorData();
+        const data = await fetchSensorData(isDebug);
         setSensorData(data);
-        debugger;
+        // debugger;
       } catch (error) {
         console.log("got error while fetching", error);
         // setError(error.message);
@@ -69,7 +80,7 @@ function Sensors() {
     const intervalId = setInterval(fetchData, 5000);  
 
     return () => clearInterval(intervalId); // removes interval if sensor isn't rendered
-  }, []);
+  }, [isDebug]);
 
 
   if (sensor) {
@@ -98,12 +109,35 @@ function Sensors() {
 }
 
 
+function ToggleDebug({ isDebug, toggleDebug }: { isDebug: boolean, toggleDebug: () => void }) {
+  // const [isDebug, setDebug] = useState(false);
+
+  // const handleClick = () => {
+  //   setDebug(!isDebug);
+  // };
+
+  return (
+    <button onClick={toggleDebug} className={`toggle-button ${isDebug ? 'on' : 'off'}`}>
+      {isDebug ? "Debug Mode On" : "Debug Mode Off"}
+    </button>
+  )
+}
+
+
 
 export function App() {
+  const [isDebug, setDebug] = useState(false);
+  const toggleDebug = () => {
+    console.log("Changing debug from", isDebug, "to", !isDebug);
+    setDebug(!isDebug);
+    console.log("isDebug is now", isDebug);
+  }
+
   return (
     <>
       <GlobalStyle />
-      <Sensors />
+      <Sensors isDebug={isDebug} />
+      <ToggleDebug isDebug={isDebug} toggleDebug={toggleDebug} />
     </>
   )
 }
