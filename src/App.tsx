@@ -1,4 +1,5 @@
 import { GlobalStyle } from './styles/GlobalStyle'
+import { DebugToggleStyle } from './styles/DebugToggle';
 import { useState, useEffect } from 'react';
 
 // let debug_mode = false;
@@ -10,9 +11,9 @@ interface Sensors {
 }
 
 const dummy: Sensors = {
-  temp: 999,
-  ph: 999,
-  tds: 999
+  temp: -1,
+  ph: -1,
+  tds: -1
 };
 
 async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
@@ -28,25 +29,29 @@ async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
       console.log("returning data and setting sensor var", data);
       return data[0];
     }
+    
   } else {
-    console.log("fetching", addr);
-    const response = await fetch(addr);
-    console.log("response", response);
-    if( response.status >= 200 && response.status < 300 ) {
-      const data = await response.json(); 
-      console.log("returning data and setting sensor var", data);
-      return data;
+    try {
+      console.log("fetching", addr);
+      const response = await fetch(addr);
+      console.log("response", response);
+      if( response.status >= 200 && response.status < 300 ) {
+        const data = await response.json(); 
+        console.log("returning data and setting sensor var", data);
+        return data;
+      } else {
+        return dummy;
+      }
+    } catch (e) {
+      //something here to display in UI that an error has occurred
+      return dummy;
     }
   }
-
-  // } catch (e) {
-  //   console.log("Error:", e);
-  // }
   return dummy;
 }
 
 function getSensorClasses(val: number, warn_min: number, warn_max: number, hard_min: number, hard_max: number): string {
-  let classes = "square ";
+  let classes = "circle ";
   if ( val == -1 ) {
     classes += "black";
   } else if (val <= hard_min || val >= hard_max ) {
@@ -87,7 +92,7 @@ function Sensors({isDebug}: {isDebug: boolean}) {
     return (
       <div className='sensor-row'>
         <div className={getSensorClasses(sensor.temp, 50, 80, 40, 90)}>
-          <p>{sensor.temp}</p>
+          <p>{sensor.temp}°F</p>
         </div>
 
         <div className={getSensorClasses(sensor.ph, 50, 80, 40, 90)}>
@@ -95,7 +100,7 @@ function Sensors({isDebug}: {isDebug: boolean}) {
         </div>
 
         <div className={getSensorClasses(sensor.tds, 50, 80, 40, 90)}>
-          <p>{sensor.tds}</p>
+          <p>{sensor.tds} ppm</p>
         </div>
       </div>
     );
@@ -117,9 +122,16 @@ function ToggleDebug({ isDebug, toggleDebug }: { isDebug: boolean, toggleDebug: 
   // };
 
   return (
-    <button onClick={toggleDebug} className={`toggle-button ${isDebug ? 'on' : 'off'}`}>
-      {isDebug ? "Debug Mode On" : "Debug Mode Off"}
-    </button>
+    // <button onClick={toggleDebug} className={`toggle-button ${isDebug ? 'on' : 'off'}`}>
+    //   {isDebug ? "Debug Mode On" : "Debug Mode Off"}
+    // </button>
+    <>
+      <p className='toggle-text'>{isDebug ? "Debug On" : "Debug Off"}</p>
+      <label className="switch toggle-button">
+        <input type="checkbox" onClick={toggleDebug} />
+        <span className="slider"></span>
+      </label>
+    </>
   )
 }
 
@@ -136,6 +148,7 @@ export function App() {
   return (
     <>
       <GlobalStyle />
+      <DebugToggleStyle />
       <Sensors isDebug={isDebug} />
       <ToggleDebug isDebug={isDebug} toggleDebug={toggleDebug} />
     </>
