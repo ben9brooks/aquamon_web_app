@@ -96,18 +96,23 @@ function Sensors({ isDebug }: { isDebug: boolean }) {
   if (sensor) {
     return (
       <div className="sensor-row">
-        <div className={getSensorClasses(sensor.temp, 50, 80, 40, 90)}>
-          <p>{sensor.temp}°F</p>
-          <Link to={`/temp`}>Click</Link>
-        </div>
+        <Link to={`/temp`}>
+          <div className={getSensorClasses(sensor.temp, 50, 80, 40, 90)}>
+            <p>{sensor.temp}°F</p>
+          </div>
+        </Link>
 
-        <div className={getSensorClasses(sensor.ph, 50, 80, 40, 90)}>
-          <p>{sensor.ph}</p>
-        </div>
+        <Link to={`/ph`}>
+          <div className={getSensorClasses(sensor.ph, 8, 10, 5, 11)}>
+            <p>{sensor.ph}</p>
+          </div>
+        </Link>
 
-        <div className={getSensorClasses(sensor.tds, 50, 80, 40, 90)}>
-          <p>{sensor.tds} ppm</p>
-        </div>
+        <Link to={`/tds`}>
+          <div className={getSensorClasses(sensor.tds, 50, 80, 40, 90)}>
+            <p>{sensor.tds} ppm</p>
+          </div>
+        </Link>
       </div>
     )
   } else {

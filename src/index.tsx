@@ -2,6 +2,7 @@ import ReactDOM from 'react-dom/client'
 import { App } from './App'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 const router = createBrowserRouter([
   {
@@ -11,17 +12,17 @@ const router = createBrowserRouter([
   },
   {
     path: '/temp',
-    element: <div>temp page </div>,
+    element: <Link to={`/main_window`}>temp page </Link>,
     errorElement: <p>see index.tsx for errors - temp page</p>,
   },
   {
     path: '/ph',
-    element: <div>ph page </div>,
+    element: <Link to={`/main_window`}>ph page </Link>,
     errorElement: <p>see index.tsx for errors - ph page</p>,
   },
   {
     path: '/tds',
-    element: <div>tds page </div>,
+    element: <Link to={`/main_window`}>tds page </Link>,
     errorElement: <p>see index.tsx for errors - tds page</p>,
   },
 ])
