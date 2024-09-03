@@ -7,18 +7,22 @@ const router = createBrowserRouter([
   {
     path: '/main_window',
     element: <App />,
+    errorElement: <p>see index.tsx for errors - home page</p>,
   },
   {
     path: '/temp',
     element: <div>temp page </div>,
+    errorElement: <p>see index.tsx for errors - temp page</p>,
   },
   {
     path: '/ph',
     element: <div>ph page </div>,
+    errorElement: <p>see index.tsx for errors - ph page</p>,
   },
   {
     path: '/tds',
     element: <div>tds page </div>,
+    errorElement: <p>see index.tsx for errors - tds page</p>,
   },
 ])
 

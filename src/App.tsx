@@ -1,6 +1,7 @@
 import { GlobalStyle } from './styles/GlobalStyle'
 import { DebugToggleStyle } from './styles/DebugToggle'
 import { useState, useEffect } from 'react'
+import { Outlet, Link } from 'react-router-dom'
 
 // let debug_mode = false;
 
@@ -97,6 +98,7 @@ function Sensors({ isDebug }: { isDebug: boolean }) {
       <div className="sensor-row">
         <div className={getSensorClasses(sensor.temp, 50, 80, 40, 90)}>
           <p>{sensor.temp}°F</p>
+          <Link to={`/temp`}>Click</Link>
         </div>
 
         <div className={getSensorClasses(sensor.ph, 50, 80, 40, 90)}>
