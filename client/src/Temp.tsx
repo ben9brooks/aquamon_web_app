@@ -1,15 +1,10 @@
 import React, { useEffect, useRef } from 'react'
-import {
-  Chart,
-  BarController,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-} from 'chart.js'
+import Chart from 'chart.js/auto'
 import { Link } from 'react-router-dom'
 import { GlobalStyle } from './styles/GlobalStyle'
+import * as Utils from './/scripts/utils.js'
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale)
+//Chart.register(BarController, BarElement, CategoryScale, LinearScale)
 
 export function Temp() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
@@ -26,24 +21,35 @@ export function Temp() {
       chartInstanceRef.current.destroy()
     }
 
+    const DATA_COUNT = 7;
+    const NUMBER_CFG = {count: DATA_COUNT, min: -100, max: 100};
+
+    const labels = Utils.months({count: 7});
+    const data = {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Dataset 1',
+          data: [0,1,2,3,4,5,6,4,3,23,45,64,2,1],
+          borderColor: Utils.CHART_COLORS.red,
+          backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
+        }]
+      }
+
     chartInstanceRef.current = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-        datasets: [
-          {
-            label: '# of Votes',
-            data: [12, 19, 3, 5, 2, 3],
-            borderWidth: 1,
-          },
-        ],
-      },
+      type: 'line',
+      data: data,
       options: {
-        scales: {
-          y: {
-            beginAtZero: true,
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
           },
-        },
+          title: {
+            display: true,
+            text: 'Chart.js Line Chart'
+          }
+        }
       },
     })
     // Cleanup function to destroy the chart when the component unmounts
@@ -57,7 +63,7 @@ export function Temp() {
   return (
     <div>
       <Link to={`/main_window`}>temp page </Link>
-      <div className="canvas-bkg" style={{ backgroundColor: '#FFFFFF' }}>
+      <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
         <canvas ref={chartRef}></canvas>
       </div>
     </div>
