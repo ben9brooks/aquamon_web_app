@@ -82,4 +82,8 @@ export const GlobalStyle = createGlobalStyle`
   a {
     color: beige;
   }
+
+  .canvas-bkg {
+    background-color: white;
+  }
 `

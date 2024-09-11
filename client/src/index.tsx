@@ -1,5 +1,6 @@
 import ReactDOM from 'react-dom/client'
 import { App } from './App'
+import { Temp } from './Temp'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import * as React from 'react'
 import { Link } from 'react-router-dom'
@@ -12,7 +13,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/temp',
-    element: <Link to={`/main_window`}>temp page </Link>,
+    element: <Temp />,
     errorElement: <p>see index.tsx for errors - temp page</p>,
   },
   {

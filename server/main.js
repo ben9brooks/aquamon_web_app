@@ -5,7 +5,7 @@ const path = require("path");
 // const moment = require("moment"); // Or use the Date object directly!!!!!!
 
 const app = express();
-const port = 5001;
+const port = 5000;
 
 // Open the existing database
 const db = Database("database.db");
@@ -55,6 +55,11 @@ app.get("/test", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// Catch all other routes and return the index.html file
+app.get("/temp", (req, res) => {
+  res.sendFile(path.join(__dirname, "client/build", "index.html"));
 });
 
 app.listen(port, () => {
