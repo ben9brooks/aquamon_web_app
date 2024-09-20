@@ -34,6 +34,7 @@ function insertTemp(id, temp, timestamp) {
 
 // Insert a sample row (you can change this as needed)
 insertTemp(1, 22.5, new Date().toISOString())
+console.log("Inserted temp entry");
 
 // app.listen(port, () => {
 //   console.log(`Server running at http://localhost:${port}`)

@@ -2,10 +2,11 @@ const express = require("express");
 const axios = require("axios");
 const Database = require("better-sqlite3"); //.verbose();
 const path = require("path");
+const { time } = require("console");
 // const moment = require("moment"); // Or use the Date object directly!!!!!!
 
 const app = express();
-const port = 5000;
+const port = 5001;
 
 // Open the existing database
 const db = Database("database.db");
@@ -23,8 +24,10 @@ async function fetchDataAndStore() {
     }
     const data = await response.json();
 
-    const timestamp = Math.floor(new Date().getTime() / 100); // Get current date/time in ISO format
+    const timestamp = Math.floor(new Date().getTime() / 100); // Get current date/time in ISO format IN SECONDS
     console.log(timestamp);
+    const date = new Date(timestamp);
+    console.log(date.toUTCString());
 
     // Insert each sensor reading into the database
     const insert = db.prepare(`
@@ -57,6 +60,25 @@ app.get("/test", async (req, res) => {
   }
 });
 
+// Drop old entries
+async function cleanTable() {
+  // find timestamp 1 week ago and delete anything earlier
+  const currentTime = Date.now() / 100; // This gives the current time in s
+
+  // Calculate 1 week (7 days) in seconds
+  const oneWeekInS = 7 * 24 * 60 * 60;
+
+  // Subtract 1 week from the current time
+  const aboutAWeekAgo = currentTime - oneWeekInS;
+
+  const deleteQuery = db.prepare(`
+    DELETE FROM temp WHERE timestamp < ?
+  `);
+  deleteQuery.run(aboutAWeekAgo);
+
+  console.log("Cleaned")
+}
+
 // Catch all other routes and return the index.html file
 app.get("/temp", (req, res) => {
   res.sendFile(path.join(__dirname, "client/build", "index.html"));
@@ -64,4 +86,6 @@ app.get("/temp", (req, res) => {
 
 app.listen(port, () => {
   console.log(`BACKEND started on port ${port}`);
+  setInterval(fetchDataAndStore, 60000);
+  setInterval(cleanTable, 600000);
 });
