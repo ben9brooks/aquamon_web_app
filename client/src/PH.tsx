@@ -2,11 +2,11 @@ import React, { useEffect, useRef } from 'react'
 import Chart from 'chart.js/auto'
 import { Link } from 'react-router-dom'
 import { GlobalStyle } from './styles/GlobalStyle'
-import * as Utils from './/scripts/utils.js'
+import * as Utils from './scripts/utils.js'
 
 //Chart.register(BarController, BarElement, CategoryScale, LinearScale)
 
-export function Temp() {
+export function PH() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
   const chartInstanceRef = useRef<Chart | null>(null) // To store the chart instance
 
@@ -47,7 +47,7 @@ export function Temp() {
           },
           title: {
             display: true,
-            text: 'Weekly Temperature'
+            text: 'Weekly pH'
           }
         }
       },
@@ -62,7 +62,7 @@ export function Temp() {
 
   return (
     <div>
-      <Link to={`/main_window`}>temp page </Link>
+      <Link to={`/main_window`}>pH page </Link>
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
         <canvas ref={chartRef}></canvas>
       </div>
