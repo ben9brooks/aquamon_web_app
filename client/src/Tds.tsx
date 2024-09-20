@@ -6,7 +6,7 @@ import * as Utils from './/scripts/utils.js'
 
 //Chart.register(BarController, BarElement, CategoryScale, LinearScale)
 
-export function Temp() {
+export function Tds() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
   const chartInstanceRef = useRef<Chart | null>(null) // To store the chart instance
 
@@ -62,7 +62,7 @@ export function Temp() {
 
   return (
     <div>
-      <Link to={`/main_window`}>temp page </Link>
+      <Link to={`/main_window`}>tds page </Link>
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
         <canvas ref={chartRef}></canvas>
       </div>
