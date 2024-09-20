@@ -3,10 +3,16 @@ const axios = require("axios");
 const Database = require("better-sqlite3"); //.verbose();
 const path = require("path");
 const { time } = require("console");
+const cors = require('cors');
 // const moment = require("moment"); // Or use the Date object directly!!!!!!
 
 const app = express();
 const port = 5001;
+
+// Enable CORS for all routes or limit it to specific origins
+app.use(cors({
+  origin: 'http://localhost:3000' // Allow only your frontend origin
+}));
 
 // Open the existing database
 const db = Database("database.db");
@@ -81,6 +87,7 @@ async function cleanTable() {
 
 // Catch all other routes and return the index.html file
 app.get("/temp", (req, res) => {
+  console.log("bruh")
   res.sendFile(path.join(__dirname, "client/build", "index.html"));
 });
 
@@ -89,3 +96,8 @@ app.listen(port, () => {
   setInterval(fetchDataAndStore, 60000);
   setInterval(cleanTable, 600000);
 });
+
+app.get('/temp-data', (req, res) => {
+  const rows = db.prepare('SELECT temp, timestamp FROM temp').all()
+  res.json(rows)
+})

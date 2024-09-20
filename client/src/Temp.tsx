@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Chart from 'chart.js/auto'
 import { Link } from 'react-router-dom'
 import { GlobalStyle } from './styles/GlobalStyle'
@@ -9,8 +9,33 @@ import * as Utils from './/scripts/utils.js'
 export function Temp() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
   const chartInstanceRef = useRef<Chart | null>(null) // To store the chart instance
+  const [chartData, setChartData] = useState<{ x: number, y: number }[]>([]) //store graph data
+
+  // Fetch data from the backend
+  async function fetchData() {
+    const response = await fetch('http://localhost:5001/temp-data') // Assuming you have a backend route for this
+    const data = await response.json()
+    console.log('data', data)
+
+    // Assuming data is an array of { temp, timestamp }
+    const formattedData = data.map((item: { temp: number, timestamp: number }) => ({
+      x: item.timestamp,
+      y: item.temp,
+    }))
+
+    setChartData(formattedData)
+  }
+  
+  // setInterval(fetchData, 5000);
 
   useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    // fetchData();
+    console.log('fetching')
+
     if (!chartRef.current) return
 
     const ctx = chartRef.current.getContext('2d')
@@ -26,11 +51,11 @@ export function Temp() {
 
     const labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     const data = {
-      labels: labels,
+      // labels: labels,
       datasets: [
         {
-          label: 'Dataset 1',
-          data: [75,74,73,72,70,68,77,79],
+          label: 'TEMPERATURE',
+          data: chartData, 
           borderColor: Utils.CHART_COLORS.red,
           backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
         }]
@@ -40,6 +65,22 @@ export function Temp() {
       type: 'line',
       data: data,
       options: {
+        scales: {
+          x: {
+            type: 'linear',
+            title: {
+              display: true,
+              text: 'Timestamp'
+            },
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Temperature'
+            },
+          },
+        },
         responsive: true,
         plugins: {
           legend: {
@@ -58,7 +99,7 @@ export function Temp() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [])
+  }, [chartData])
 
   return (
     <div>
