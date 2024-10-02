@@ -30,20 +30,32 @@ async function fetchDataAndStore() {
     }
     const data = await response.json();
 
-    const timestamp = Math.floor(new Date().getTime() / 100); // Get current date/time in ISO format IN SECONDS
+    const timestamp = Math.floor(new Date().getTime()); // Get current date/time in ISO format IN SECONDS
     console.log(timestamp);
     const date = new Date(timestamp);
     console.log(date.toUTCString());
 
     // Insert each sensor reading into the database
-    const insert = db.prepare(`
+    const insertTemp = db.prepare(`
         INSERT INTO temp (temp, timestamp) VALUES (?, ?)
       `);
+    const insertPh = db.prepare(`
+        INSERT INTO ph (ph, timestamp) VALUES (?, ?)
+      `);
+    const insertTDS = db.prepare(`
+      INSERT INTO tds (tds, timestamp) VALUES (?, ?)
+    `);
 
     // Assuming the data is an array of sensor readings
     for (const item of data) {
-      insert.run(item.temp, timestamp);
+      insertTemp.run(item.temp, timestamp);
       output.push([item.temp, timestamp]);
+
+      insertPh.run(item.ph, timestamp);
+      output.push([item.ph, timestamp]);
+
+      insertTDS.run(item.tds, timestamp);
+      output.push([item.tds, timestamp]);
     }
 
     console.log("Data inserted successfully");
@@ -69,10 +81,10 @@ app.get("/test", async (req, res) => {
 // Drop old entries
 async function cleanTable() {
   // find timestamp 1 week ago and delete anything earlier
-  const currentTime = Date.now() / 100; // This gives the current time in s
+  const currentTime = Date.now(); //current time in milliseconds
 
-  // Calculate 1 week (7 days) in seconds
-  const oneWeekInS = 7 * 24 * 60 * 60;
+  // Calculate 1 week (7 days) in milliseconds
+  const oneWeekInS = 7 * 24 * 60 * 60 * 1000;
 
   // Subtract 1 week from the current time
   const aboutAWeekAgo = currentTime - oneWeekInS;
@@ -93,11 +105,21 @@ app.get("/temp", (req, res) => {
 
 app.listen(port, () => {
   console.log(`BACKEND started on port ${port}`);
-  setInterval(fetchDataAndStore, 60000);
+  setInterval(fetchDataAndStore, 5000);
   setInterval(cleanTable, 600000);
 });
 
 app.get('/temp-data', (req, res) => {
   const rows = db.prepare('SELECT temp, timestamp FROM temp').all()
+  res.json(rows)
+})
+
+app.get('/ph-data', (req, res) => {
+  const rows = db.prepare('SELECT ph, timestamp FROM ph').all()
+  res.json(rows)
+})
+
+app.get('/tds-data', (req, res) => {
+  const rows = db.prepare('SELECT tds, timestamp FROM tds').all()
   res.json(rows)
 })
