@@ -3,6 +3,8 @@ import Chart from 'chart.js/auto'
 import { Link } from 'react-router-dom'
 import { GlobalStyle } from './styles/GlobalStyle'
 import * as Utils from './/scripts/utils.js'
+import 'chartjs-adapter-date-fns';
+import { config } from 'webpack'
 
 //Chart.register(BarController, BarElement, CategoryScale, LinearScale)
 
@@ -10,7 +12,14 @@ export function Temp() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
   const chartInstanceRef = useRef<Chart | null>(null) // To store the chart instance
   const [chartData, setChartData] = useState<{ x: number, y: number }[]>([]) //store graph data
+  const [timeUnit, setTimeUnit] = useState<'hour' | 'day' | 'week'>('hour');
+  const [timeMin, setTimeMin] = useState<string | number | undefined>(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString());
+  const [timeMax, setTimeMax] = useState<string | number | undefined>( new Date().toString());
+  const LOWER_THRESHOLD = 70;
+  const UPPER_THRESHOLD = 80;
+  // const time_unit = 'day';
 
+  console.log('min', timeMin);
   // Fetch data from the backend
   async function fetchData() {
     const response = await fetch('http://localhost:5001/temp-data') // Assuming you have a backend route for this
@@ -19,10 +28,14 @@ export function Temp() {
 
     // Assuming data is an array of { temp, timestamp }
     const formattedData = data.map((item: { temp: number, timestamp: number }) => ({
-      x: item.timestamp,
+      x: new Date(item.timestamp),
       y: item.temp,
     }))
+    // const formattedData2 = [];
+    // for (let i =0; i < length(data); i++)
 
+    // console.log(formattedData)
+    console.log('min', timeMin);
     setChartData(formattedData)
   }
   
@@ -46,20 +59,50 @@ export function Temp() {
       chartInstanceRef.current.destroy()
     }
 
-    const DATA_COUNT = 7;
-    const NUMBER_CFG = {count: DATA_COUNT, min: -100, max: 100};
-
-    const labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    const data = {
-      // labels: labels,
-      datasets: [
-        {
-          label: 'TEMPERATURE',
-          data: chartData, 
-          borderColor: Utils.CHART_COLORS.red,
-          backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
-        }]
+    const pointFillColors = chartData.map(point => {
+      if (point.y < LOWER_THRESHOLD || point.y > UPPER_THRESHOLD) {
+        return 'red'; // Red fill for out of range
+      } else if (point.y === LOWER_THRESHOLD || point.y === UPPER_THRESHOLD) {
+        return 'orange'; // Orange fill for boundary
       }
+      return 'green'; // Green fill for in range
+    });
+
+    const pointBorderColors = chartData.map(point => {
+      if (point.y < LOWER_THRESHOLD || point.y > UPPER_THRESHOLD) {
+        return 'darkred'; // Dark red border for out of range
+      } else if (point.y === LOWER_THRESHOLD || point.y === UPPER_THRESHOLD) {
+        return 'orange'; // Orange border for boundary
+      }
+      return 'green'; // Blue border for in range
+    });
+
+    const lineColor = chartData.some(point => point.y < LOWER_THRESHOLD || point.y > UPPER_THRESHOLD) ? 'red' : 'green';
+
+    const dataset = {
+      label: 'TEMPERATURE',
+      data: chartData,
+      borderColor: lineColor, 
+      pointBackgroundColor: pointFillColors,
+      pointBorderColor: pointBorderColors,
+      pointBorderWidth: 2,
+      fill: false,
+    };
+
+    const data = {
+      datasets: [dataset],
+    };
+
+    // const data = {
+    //   // labels: labels,
+    //   datasets: [
+    //     {
+    //       label: 'TEMPERATURE',
+    //       data: chartData, 
+    //       borderColor: Utils.CHART_COLORS.red,
+    //       backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
+    //     }]
+    //   }
 
     chartInstanceRef.current = new Chart(ctx, {
       type: 'line',
@@ -67,11 +110,18 @@ export function Temp() {
       options: {
         scales: {
           x: {
-            type: 'linear',
+            offset: false,
+            type: 'time', 
             title: {
               display: true,
-              text: 'Timestamp'
+              text: 'Timestamp',
             },
+            time: {
+              unit: timeUnit,
+              // tooltipFormat: 'MMM dd, yyyy',
+            },
+            min: timeMin,
+            max: timeMax,
           },
           y: {
             beginAtZero: true,
@@ -99,13 +149,29 @@ export function Temp() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [chartData])
+  }, [chartData, timeUnit, timeMin])
+
+  // const myChart = new Chart(
+  //   document.getElementById('deez'),
+  //   config
+  // )
+
+  // function dateFilter(time: 'hour' | 'day' | 'week') {
+  //   setTimeUnit(time);
+  //   console.log(chartInstanceRef.current)
+  //   chartInstanceRef.current?.update();
+  // }
 
   return (
     <div>
       <Link to={`/main_window`}>temp page </Link>
+      <div>
+        <button onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString())}}>Hour</button>
+        <button onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString())}}>Day</button>
+        <button onClick={() => {setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString())}}>Week</button>
+      </div>
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
-        <canvas ref={chartRef}></canvas>
+        <canvas ref={chartRef} id='deez'></canvas>
       </div>
     </div>
   )
