@@ -105,7 +105,7 @@ app.get("/temp", (req, res) => {
 
 app.listen(port, () => {
   console.log(`BACKEND started on port ${port}`);
-  setInterval(fetchDataAndStore, 5000);
+  setInterval(fetchDataAndStore, 50000);
   setInterval(cleanTable, 600000);
 });
 

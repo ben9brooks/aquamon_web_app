@@ -6,7 +6,17 @@ import * as Utils from './/scripts/utils.js'
 import 'chartjs-adapter-date-fns';
 import { config } from 'webpack'
 
-//Chart.register(BarController, BarElement, CategoryScale, LinearScale)
+const hourTitle = "Temperature Over the Last Hour"
+const dayTitle = "Temperature Over the Last Day"
+const weekTitle = "Temperature Over the Last Week"
+
+function set_button_press_style(type: string) {
+  //when a button is clicked, set that one as the 'pressed' style, and change the others to be lifted up.
+  document.getElementById('hour-btn')!.className = "time-btn";
+  document.getElementById('day-btn')!.className = "time-btn";
+  document.getElementById('week-btn')!.className = "time-btn";
+  document.getElementById(type)!.className = 'time-btn time-pressed';
+}
 
 export function Temp() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
@@ -15,6 +25,7 @@ export function Temp() {
   const [timeUnit, setTimeUnit] = useState<'hour' | 'day' | 'week'>('hour');
   const [timeMin, setTimeMin] = useState<string | number | undefined>(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString());
   const [timeMax, setTimeMax] = useState<string | number | undefined>( new Date().toString());
+  const [graphTitle, setGraphTitle] = useState(hourTitle)
   const LOWER_THRESHOLD = 70;
   const UPPER_THRESHOLD = 80;
   // const time_unit = 'day';
@@ -138,7 +149,7 @@ export function Temp() {
           },
           title: {
             display: true,
-            text: 'Weekly Temperature'
+            text: graphTitle
           }
         }
       },
@@ -149,7 +160,7 @@ export function Temp() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [chartData, timeUnit, timeMin])
+  }, [chartData, timeUnit, timeMin, graphTitle])
 
   // const myChart = new Chart(
   //   document.getElementById('deez'),
@@ -164,14 +175,20 @@ export function Temp() {
 
   return (
     <div>
-      <Link to={`/main_window`}>temp page </Link>
-      <div>
-        <button onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString())}}>Hour</button>
-        <button onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString())}}>Day</button>
-        <button onClick={() => {setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString())}}>Week</button>
+      <GlobalStyle />
+
+      <button className='button-40'>
+        <Link to={`/main_window`}>
+          &lt; Back  
+        </Link>
+      </button>
+      <div className='btn-row'>
+        <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
+        <button id='day-btn' className='time-btn' onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
+        <button id='week-btn' className='time-btn' onClick={() => {setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
       </div>
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
-        <canvas ref={chartRef} id='deez'></canvas>
+        <canvas ref={chartRef} className='graph'></canvas>
       </div>
     </div>
   )
