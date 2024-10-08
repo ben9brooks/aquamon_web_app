@@ -36,6 +36,7 @@ export const GlobalStyle = createGlobalStyle`
     text-align: center;
     margin-top: 4vh;
     margin-bottom: 7vh;
+    color: aqua;
   }
 
   .sensor-row {
@@ -51,6 +52,7 @@ export const GlobalStyle = createGlobalStyle`
 
   .red {
     background-color: red;
+    color: white;
   }
 
   .yellow {
@@ -60,6 +62,7 @@ export const GlobalStyle = createGlobalStyle`
 
   .green {
     background-color: green;
+    color: white;
   }
 
   .toggle-button {
@@ -83,10 +86,11 @@ export const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    background-color: white;
   }
 
   a {
-    color: beige;
+    color: black;
     text-decoration: none; 
   }
 
@@ -105,7 +109,7 @@ export const GlobalStyle = createGlobalStyle`
     // background-color: #8bdc00;
     border: none;
     border-radius: 15px;
-    box-shadow: 0 5px  #7ac70c;
+    box-shadow: 0 5px  #18c7d0;
   }
 
   .time-pressed {
@@ -129,34 +133,29 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   .button-40 {
-    background-color: #111827;
+    display: inline-flex; /* Allows the button to grow with content */
+    background-color: #1F2937; /* Set a default background color */
+    color: #FFFFFF; /* White text */
+    padding: .75rem 1.2rem;
     border: 1px solid transparent;
     border-radius: .75rem;
-    box-sizing: border-box;
-    color: #FFFFFF;
-    cursor: pointer;
-    flex: 0 0 auto;
-    font-family: "Inter var",ui-sans-serif,system-ui,-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
     font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.5rem;
-    padding: .75rem 1.2rem;
     text-align: center;
-    text-decoration: none #6B7280 solid;
-    text-decoration-thickness: auto;
-    transition-duration: .2s;
-    transition-property: background-color,border-color,color,fill,stroke;
-    transition-timing-function: cubic-bezier(.4, 0, 0.2, 1);
+    text-decoration: none; /* Remove underline from link */
+    cursor: pointer;
+    transition: background-color 0.2s cubic-bezier(.4, 0, 0.2, 1);
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    width: auto;
+    box-sizing: border-box; /* Include padding and border in element's total width */
   }
-
+  
   .button-40:hover {
-    background-color: #374151;
+    background-color: #374151; /* Darker on hover */
   }
-
+  
   .button-40:focus {
     box-shadow: none;
     outline: 2px solid transparent;

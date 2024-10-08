@@ -177,11 +177,9 @@ export function Temp() {
     <div>
       <GlobalStyle />
 
-      <button className='button-40'>
-        <Link to={`/main_window`}>
-          &lt; Back  
-        </Link>
-      </button>
+      <Link to={`/main_window`} className='button-40' >
+        &larr;
+      </Link>
       <div className='btn-row'>
         <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
         <button id='day-btn' className='time-btn' onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
