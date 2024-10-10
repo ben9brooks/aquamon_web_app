@@ -36,6 +36,17 @@
   flex-direction: row;
   justify-content: space-evenly;
 }
+
+.sensor-title {
+  font-size: 10em;
+  color: black;
+}
+
+.graph-title-row {
+  display: flex;
+  flex-direction: row;
+  /* background-image: url(()); */
+}
 /* 
   .sensor-row a {
 

@@ -5,6 +5,7 @@ import { GlobalStyle } from './styles/GlobalStyle'
 import * as Utils from './/scripts/utils.js'
 import 'chartjs-adapter-date-fns';
 import { config } from 'webpack'
+import chevron from '../public/images/next.png';
 
 const hourTitle = "Temperature Over the Last Hour"
 const dayTitle = "Temperature Over the Last Day"
@@ -26,27 +27,52 @@ export function Temp() {
   const [timeMin, setTimeMin] = useState<string | number | undefined>(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString());
   const [timeMax, setTimeMax] = useState<string | number | undefined>( new Date().toString());
   const [graphTitle, setGraphTitle] = useState(hourTitle)
+  const [minY, setMinY] = useState<number>(Infinity);
+  const [maxY, setMaxY] = useState<number>(-Infinity);
+
   const LOWER_THRESHOLD = 70;
   const UPPER_THRESHOLD = 80;
   // const time_unit = 'day';
 
-  console.log('min', timeMin);
+  // console.log('min', timeMin);
   // Fetch data from the backend
   async function fetchData() {
     const response = await fetch('http://localhost:5001/temp-data') // Assuming you have a backend route for this
     const data = await response.json()
-    console.log('data', data)
+    // console.log('data', data)
 
     // Assuming data is an array of { temp, timestamp }
     const formattedData = data.map((item: { temp: number, timestamp: number }) => ({
       x: new Date(item.timestamp),
       y: item.temp,
     }))
-    // const formattedData2 = [];
-    // for (let i =0; i < length(data); i++)
 
-    // console.log(formattedData)
-    console.log('min', timeMin);
+    let localMinY = Infinity;
+    let localMaxY = -Infinity;
+
+    for (let i = 0; i < formattedData.length; i++) {
+      let temp = formattedData[i].y;
+      // console.log(temp)
+    
+      // Update minTemp if the current temperature is lower
+      if (temp < localMinY) {
+        localMinY = temp;
+      }
+    
+      // Update maxTemp if the current temperature is higher
+      if (temp > localMaxY) {
+        localMaxY = temp;
+      }
+    }
+
+    // round max up to the next 5 and min to the bottom 5.
+    localMaxY = Math.floor(localMaxY / 5) * 5;
+    localMaxY = localMaxY + 5;
+    localMinY = Math.floor(localMinY / 5) * 5;
+    localMinY = localMinY - 5;  
+    setMaxY(localMaxY);
+    setMinY(localMinY);
+
     setChartData(formattedData)
   }
   
@@ -91,7 +117,7 @@ export function Temp() {
     const lineColor = chartData.some(point => point.y < LOWER_THRESHOLD || point.y > UPPER_THRESHOLD) ? 'red' : 'green';
 
     const dataset = {
-      label: 'TEMPERATURE',
+      label: 'Temperature',
       data: chartData,
       borderColor: lineColor, 
       pointBackgroundColor: pointFillColors,
@@ -104,16 +130,6 @@ export function Temp() {
       datasets: [dataset],
     };
 
-    // const data = {
-    //   // labels: labels,
-    //   datasets: [
-    //     {
-    //       label: 'TEMPERATURE',
-    //       data: chartData, 
-    //       borderColor: Utils.CHART_COLORS.red,
-    //       backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
-    //     }]
-    //   }
 
     chartInstanceRef.current = new Chart(ctx, {
       type: 'line',
@@ -140,6 +156,8 @@ export function Temp() {
               display: true,
               text: 'Temperature'
             },
+            min: minY,
+            max: maxY,
           },
         },
         responsive: true,
@@ -160,7 +178,7 @@ export function Temp() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [chartData, timeUnit, timeMin, graphTitle])
+  }, [chartData, timeUnit, timeMin, graphTitle, minY, maxY])
 
   // const myChart = new Chart(
   //   document.getElementById('deez'),
@@ -172,14 +190,19 @@ export function Temp() {
   //   console.log(chartInstanceRef.current)
   //   chartInstanceRef.current?.update();
   // }
-
+  // console.log("About to return graph..", minY, maxY)
   return (
-    <div>
-      <GlobalStyle />
+    <>
+    <GlobalStyle />
+    <div className='sensor-bkg'>
 
-      <Link to={`/main_window`} className='button-40' >
-        &larr;
-      </Link>
+      <div className='graph-title-row'>
+        <Link to={`/main_window`} className='button-40'>
+          {/* <img src='../public/images/next.png' alt='no img' /> */}
+          <img src= {chevron} alt='no img' />
+        </Link>
+        <h2 className='sensor-page-title'>Temperature</h2>
+      </div>
       <div className='btn-row'>
         <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
         <button id='day-btn' className='time-btn' onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
@@ -189,5 +212,6 @@ export function Temp() {
         <canvas ref={chartRef} className='graph'></canvas>
       </div>
     </div>
+    </>
   )
 }

@@ -2,7 +2,9 @@ import { GlobalStyle } from './styles/GlobalStyle'
 import { DebugToggleStyle } from './styles/DebugToggle'
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
-
+import deez from '../public/images/underwater_high_small.png'
+// import {underwaterImg} from '../public/images/underwater.png'
+// import {underwaterImg2} from './underwater_high_small.png's
 // let debug_mode = false;
 
 interface Sensors {
@@ -96,23 +98,32 @@ function Sensors({ isDebug }: { isDebug: boolean }) {
   if (sensor) {
     return (
       <div className="sensor-row">
-        <Link to={`/temp`}>
-          <div className={getSensorClasses(sensor.temp, 50, 80, 40, 90)}>
-            <p>{sensor.temp}°F</p>
-          </div>
-        </Link>
+        <div className='sensor-entry'>
+          <h3 className='sensor-title'>Temperature</h3>
+          <Link to={`/temp`}>
+            <div className={getSensorClasses(sensor.temp, 50, 80, 40, 90)}>
+              <p>{sensor.temp}°F</p>
+            </div>
+          </Link>
+        </div>
 
-        <Link to={`/ph`}>
-          <div className={getSensorClasses(sensor.ph, 8, 10, 5, 11)}>
-            <p>{sensor.ph}</p>
-          </div>
-        </Link>
+        <div className='sensor-entry'>
+          <h3 className='sensor-title'>pH</h3>
+          <Link to={`/ph`}>
+            <div className={getSensorClasses(sensor.ph, 8, 10, 5, 11)}>
+              <p>{sensor.ph}</p>
+            </div>
+          </Link>
+        </div>
 
-        <Link to={`/tds`}>
-          <div className={getSensorClasses(sensor.tds, 50, 80, 40, 90)}>
-            <p>{sensor.tds} ppm</p>
-          </div>
-        </Link>
+        <div className='sensor-entry'>
+          <h3 className='sensor-title'>TDS</h3>
+          <Link to={`/tds`}>
+            <div className={getSensorClasses(sensor.tds, 50, 80, 40, 90)}>
+              <p>{sensor.tds} ppm</p>
+            </div>
+          </Link>
+        </div>
       </div>
     )
   } else {
@@ -152,13 +163,23 @@ export function App() {
 
   return (
     <>
-      <GlobalStyle />
+    <GlobalStyle />
+    {/* <img src= '/images/underwater.png' alt='broke1' /> */}
+    {/* <img src={deez} alt='broke2' onError={(e) => {console.log("image broken", e)}}/> */}
+    <div className='bkg' style={{
+        backgroundImage: `url(${deez})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        width: '100vw',
+        height: '100vh',
+      }}>
       <DebugToggleStyle />
       <div className='title'>
         <h1>AquaMon Dashboard</h1>
       </div>
       <Sensors isDebug={isDebug} />
       <ToggleDebug isDebug={isDebug} toggleDebug={toggleDebug} />
+    </div>
     </>
   )
 }

@@ -104,16 +104,6 @@ export function Tds() {
       datasets: [dataset],
     };
 
-    // const data = {
-    //   // labels: labels,
-    //   datasets: [
-    //     {
-    //       label: 'TEMPERATURE',
-    //       data: chartData, 
-    //       borderColor: Utils.CHART_COLORS.red,
-    //       backgroundColor: Utils.transparentize(Utils.CHART_COLORS.red, 0.5),
-    //     }]
-    //   }
 
     chartInstanceRef.current = new Chart(ctx, {
       type: 'line',

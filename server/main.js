@@ -48,7 +48,7 @@ async function fetchDataAndStore() {
 
     // Assuming the data is an array of sensor readings
     for (const item of data) {
-      insertTemp.run(item.temp, timestamp);
+      insertTemp.run(Math.floor(Math.random() * 3) + 71, timestamp);
       output.push([item.temp, timestamp]);
 
       insertPh.run(item.ph, timestamp);

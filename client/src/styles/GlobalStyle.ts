@@ -11,6 +11,17 @@ export const GlobalStyle = createGlobalStyle`
     font-family: Arial, Helvetica, sans-serif;
     font-size: 16px;
     color: #E1E1E6;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    // overflow: hidden;
+  }
+
+  html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    // overflow: hidden;
   }
 
   .square {
@@ -19,8 +30,8 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   .circle {
-    height: 100px;
-    width: 100px;
+    height: 150px;
+    width: 150px;
     background-color: #bbb;
     border-radius: 50%;
     display: inline-block;
@@ -29,14 +40,21 @@ export const GlobalStyle = createGlobalStyle`
 
   .circle p {
     padding: 40% 0;
-
+    font-size: 1.3em;
   }
 
   .title {
     text-align: center;
-    margin-top: 4vh;
+    // margin-top: 4vh;
     margin-bottom: 7vh;
     color: aqua;
+  }
+
+  
+
+  .sensor-bkg {
+    height: 100%;
+    background-color: white;
   }
 
   .sensor-row {
@@ -46,8 +64,25 @@ export const GlobalStyle = createGlobalStyle`
     justify-content: space-evenly;
   }
 
+  .sensor-entry {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sensor-title {
+    text-align: center;
+    margin-bottom: 3vh;
+    font-size: 1.6em;
+    color: black;
+  }
+
+  .sensor-page-title {
+    color: black
+  }
+
   .black {
     background-color: rgb(63, 63, 63);
+    color: white;
   }
 
   .red {
@@ -68,25 +103,45 @@ export const GlobalStyle = createGlobalStyle`
   .toggle-button {
     position: absolute;
     right: 20px; /* Adjust this value as needed */
-    bottom: -20px; /* Adjust this value as needed */
+    bottom: 10px; /* Adjust this value as needed */
   }
 
   .toggle-text {
     position: absolute;
     right: 15px; /* Adjust this value as needed */
-    bottom: 20px; /* Adjust this value as needed */
+    bottom: 50px; /* Adjust this value as needed */
     font-family: Georgia;
-    opacity: 50%;
+    opacity: 70%;
   }
 
   #root {
-    height: 90vh;
+    // height: 100vh;
+    height: 100%;
     width: 100vw;
     position: relative;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    background-color: white;
+    border: none;
+    box-shadow: none;
+    min-height: 100vh;
+
+    // background-color: white;
+    // background-image: url("../images/underwater.png");
+    background-color: white; /* Ensure this is visible */
+    background-image: url('.../public/images/underwater_high_small.png');
+    background-size: cover; /* Ensures the image covers the entire div */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+  }
+
+  .graph-title-row {
+    display: flex;
+    flex-direction: row;
+  }
+  .graph-title-row h2 {
+    margin: auto;
+    padding-right: 3vw;
   }
 
   a {
@@ -134,7 +189,8 @@ export const GlobalStyle = createGlobalStyle`
 
   .button-40 {
     display: inline-flex; /* Allows the button to grow with content */
-    background-color: #1F2937; /* Set a default background color */
+    // background-color: #1F2937; /* Set a default background color */
+    background-color: #a4a6a6;
     color: #FFFFFF; /* White text */
     padding: .75rem 1.2rem;
     border: 1px solid transparent;
@@ -150,6 +206,9 @@ export const GlobalStyle = createGlobalStyle`
     -webkit-user-select: none;
     touch-action: manipulation;
     box-sizing: border-box; /* Include padding and border in element's total width */
+    height: 5vh;
+    width: 5vw;
+    transform: rotate(180deg);
   }
   
   .button-40:hover {
