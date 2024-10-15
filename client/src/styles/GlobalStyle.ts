@@ -47,7 +47,7 @@ export const GlobalStyle = createGlobalStyle`
     text-align: center;
     // margin-top: 4vh;
     margin-bottom: 7vh;
-    color: aqua;
+    color: #54BB8C;
   }
 
   

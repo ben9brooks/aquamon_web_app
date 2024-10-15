@@ -175,7 +175,7 @@ export function App() {
       }}>
       <DebugToggleStyle />
       <div className='title'>
-        <h1>AquaMon Dashboard</h1>
+        <h1><b>AquaMon Dashboard</b></h1>
       </div>
       <Sensors isDebug={isDebug} />
       <ToggleDebug isDebug={isDebug} toggleDebug={toggleDebug} />
