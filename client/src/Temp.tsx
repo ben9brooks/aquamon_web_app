@@ -15,6 +15,55 @@ const weekTitle = "Temperature Over the Last Week"
 // function valuetext(value: number) {
 //   return `${value}°C`;
 // }
+interface SliderData {
+  temp_warn_min: number;
+  temp_warn_max: number;
+  temp_alert_min: number;
+  temp_alert_max: number;
+  ph_warn_min: number, 
+  ph_warn_max: number,
+  ph_alert_min: number, 
+  ph_alert_max: number,
+  tds_warn_min: number, 
+  tds_warn_max: number,
+  tds_alert_min: number, 
+  tds_alert_max: number
+}
+
+class SliderDataConstructor implements SliderData {
+  temp_warn_min: number;
+  temp_warn_max: number;
+  temp_alert_min: number;
+  temp_alert_max: number;
+  ph_warn_min: number;
+  ph_warn_max: number;
+  ph_alert_min: number;
+  ph_alert_max: number;
+  tds_warn_min: number;
+  tds_warn_max: number;
+  tds_alert_min: number;
+  tds_alert_max: number;
+
+  constructor(
+    temp_warn_min: number,
+    temp_warn_max: number,
+    temp_alert_min: number,
+    temp_alert_max: number
+  ) {
+    this.temp_warn_min = temp_warn_min;
+    this.temp_warn_max = temp_warn_max;
+    this.temp_alert_min = temp_alert_min;
+    this.temp_alert_max = temp_alert_max;
+    this.ph_warn_min = -100; //invalid, or Do Not Update
+    this.ph_warn_max = -100;
+    this.ph_alert_min = -100;
+    this.ph_alert_max = -100;
+    this.tds_warn_min = -100;
+    this.tds_warn_max = -100;
+    this.tds_alert_min = -100;
+    this.tds_alert_max = -100;
+  }
+}
 
 function set_button_press_style(type: string) {
   //when a button is clicked, set that one as the 'pressed' style, and change the others to be lifted up.
@@ -41,6 +90,7 @@ export function Temp() {
   const UPPER_THRESHOLD = 80;
   
   const handleSliderChangeWarn = (newValue: number[]) => {
+    console.log("change", newValue);
     setSliderValueWarn(newValue); // Update the state with the new value
   };
   const handleSliderChangeAlert = (newValue: number[]) => {
@@ -228,15 +278,16 @@ export function Temp() {
     }
   }
 
-  const upload_parameters = async (userId: number, updatedData: number[] ): Promise<void> => {
-    console.log("submit press");
+  const upload_parameters = async (userId: number, updatedDataWarn: number[], updatedDataAlert: number[] ): Promise<void> => {
+    const newJohn = new SliderDataConstructor(updatedDataWarn[0], updatedDataWarn[1], updatedDataAlert[0], updatedDataAlert[1])    
+    console.log("submit press", newJohn);
     try {
       const response = await fetch(`http://localhost:5001/upload-user-parameters/${userId}`, {
         method: 'PUT', // Specify the method
         headers: {
           'Content-Type': 'application/json', // Specify the content type
         },
-        body: JSON.stringify(updatedData), // Convert the data to JSON
+        body: JSON.stringify(newJohn), // Convert the data to JSON
       });
   
       if (!response.ok) {
@@ -279,7 +330,9 @@ export function Temp() {
         <p>Some text in the Modal..</p>
         <RangeSlider sensor="temp-green" value={sliderValueWarn} onChange={handleSliderChangeWarn}/>
         <RangeSlider sensor="temp-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert}/>
-        <button onClick={() => {upload_parameters()}}>SUBMIT</button>
+        <button onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert)}}>SUBMIT</button>
+        <p>Slider values: [{sliderValueWarn[0]}, {sliderValueWarn[1]}]</p>
+        <p>Slider values: [{sliderValueAlert[0]}, {sliderValueAlert[1]}]</p>
       </div>
 
     </div>

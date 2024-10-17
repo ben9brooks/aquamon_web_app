@@ -85,14 +85,14 @@ export default function RangeSlider({ sensor, value, onChange }: RangeSliderProp
     };
 
     initializeData(); // Call the async function
-  }, [sensor, onChange]); // Re-run if `sensor` changes
+  }, [sensor]); // Re-run if `sensor` changes
 
   // console.log('fetched init', init)
   // const [value, setValue] = React.useState<number[]>(init);
   
   const handleChange = (event: Event, newValue: number | number[]) => {
     // setValue(newValue as number[]);
-    setInit(newValue as number[]);
+    setInit(newValue as number[]); //handles visual sliding
     onChange(newValue as number[]);
   };
 
