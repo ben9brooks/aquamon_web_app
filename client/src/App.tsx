@@ -3,9 +3,6 @@ import { DebugToggleStyle } from './styles/DebugToggle'
 import { useState, useEffect } from 'react'
 import { Outlet, Link } from 'react-router-dom'
 import deez from '../public/images/underwater_high_small.png'
-// import {underwaterImg} from '../public/images/underwater.png'
-// import {underwaterImg2} from './underwater_high_small.png's
-// let debug_mode = false;
 
 interface Sensors {
   temp: number

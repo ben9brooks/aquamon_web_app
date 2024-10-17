@@ -48,7 +48,7 @@ async function fetchDataAndStore() {
 
     // Assuming the data is an array of sensor readings
     for (const item of data) {
-      insertTemp.run(Math.floor(Math.random() * 3) + 71, timestamp);
+      insertTemp.run(item.temp, timestamp);
       output.push([item.temp, timestamp]);
 
       insertPh.run(item.ph, timestamp);
@@ -123,3 +123,21 @@ app.get('/tds-data', (req, res) => {
   const rows = db.prepare('SELECT tds, timestamp FROM tds').all()
   res.json(rows)
 })
+
+app.get('/user-parameters/:user_id', (req, res) => {
+  const userId = req.params.user_id;
+  const data = db.prepare('SELECT * FROM user_parameters WHERE user_id = ?').all(userId);
+  res.json(data)
+
+})
+
+
+app.get('/upload-user-parameters/:user_id', (req, res) => {
+  console.log("PUT?")
+  const userId = req.params.user_id;
+  // const userId = req.params.user_id;
+  // const data = db.prepare('SELECT * FROM user_parameters WHERE user_id = ?').all(userId);
+  // res.json(data)
+
+})
+

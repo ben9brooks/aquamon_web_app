@@ -6,10 +6,15 @@ import * as Utils from './/scripts/utils.js'
 import 'chartjs-adapter-date-fns';
 import { config } from 'webpack'
 import chevron from '../public/images/next.png';
+import RangeSlider from './components/RangeSlider'
 
 const hourTitle = "Temperature Over the Last Hour"
 const dayTitle = "Temperature Over the Last Day"
 const weekTitle = "Temperature Over the Last Week"
+
+// function valuetext(value: number) {
+//   return `${value}°C`;
+// }
 
 function set_button_press_style(type: string) {
   //when a button is clicked, set that one as the 'pressed' style, and change the others to be lifted up.
@@ -29,13 +34,19 @@ export function Temp() {
   const [graphTitle, setGraphTitle] = useState(hourTitle)
   const [minY, setMinY] = useState<number>(Infinity);
   const [maxY, setMaxY] = useState<number>(-Infinity);
+  const [sliderValueWarn, setSliderValueWarn] = useState<number[]>([40, 60]);
+  const [sliderValueAlert, setSliderValueAlert] = useState<number[]>([40, 60]);
 
   const LOWER_THRESHOLD = 70;
   const UPPER_THRESHOLD = 80;
-  // const time_unit = 'day';
+  
+  const handleSliderChangeWarn = (newValue: number[]) => {
+    setSliderValueWarn(newValue); // Update the state with the new value
+  };
+  const handleSliderChangeAlert = (newValue: number[]) => {
+    setSliderValueAlert(newValue); // Update the state with the new value
+  };
 
-  // console.log('min', timeMin);
-  // Fetch data from the backend
   async function fetchData() {
     const response = await fetch('http://localhost:5001/temp-data') // Assuming you have a backend route for this
     const data = await response.json()
@@ -191,6 +202,54 @@ export function Temp() {
   //   chartInstanceRef.current?.update();
   // }
   // console.log("About to return graph..", minY, maxY)
+
+  var modal = document.getElementById("myModal");
+
+  // Get the button that opens the modal
+  var btn = document.getElementById("myBtn");
+
+  // Get the <span> element that closes the modal
+  var span = document.getElementsByClassName("close")[0];
+
+  // When the user clicks on the button, open the modal
+  // btn!.onclick = function() {
+  //   modal!.style.display = "block";
+  // }
+
+  // // When the user clicks on <span> (x), close the modal
+  // span.onclick = function() {
+  //   modal.style.display = "none";
+  // }
+
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+    if (event.target == modal) {
+      modal!.style.display = "none";
+    }
+  }
+
+  const upload_parameters = async (userId: number, updatedData: number[] ): Promise<void> => {
+    console.log("submit press");
+    try {
+      const response = await fetch(`http://localhost:5001/upload-user-parameters/${userId}`, {
+        method: 'PUT', // Specify the method
+        headers: {
+          'Content-Type': 'application/json', // Specify the content type
+        },
+        body: JSON.stringify(updatedData), // Convert the data to JSON
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const result = await response.json(); // If you expect a response body
+      console.log('Update successful:', result);
+    } catch (error) {
+      console.error('Error updating user parameters:', error);
+    }
+  }
+
   return (
     <>
     <GlobalStyle />
@@ -202,6 +261,7 @@ export function Temp() {
           <img src= {chevron} alt='no img' />
         </Link>
         <h2 className='sensor-page-title'>Temperature</h2>
+        <button id="myBtn" onClick={() => {modal!.style.display = "block";}}>Open Modal</button>
       </div>
       <div className='btn-row'>
         <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
@@ -211,6 +271,17 @@ export function Temp() {
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
         <canvas ref={chartRef} className='graph'></canvas>
       </div>
+    </div>
+    <div id="myModal" className="modal">
+
+      <div className="modal-content">
+        <span className="close" onClick={() => {modal!.style.display = "none"}}>&times;</span>
+        <p>Some text in the Modal..</p>
+        <RangeSlider sensor="temp-green" value={sliderValueWarn} onChange={handleSliderChangeWarn}/>
+        <RangeSlider sensor="temp-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert}/>
+        <button onClick={() => {upload_parameters()}}>SUBMIT</button>
+      </div>
+
     </div>
     </>
   )
