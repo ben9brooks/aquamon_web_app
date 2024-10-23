@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
     sensor: string;
     value: number[]; 
     onChange: (newValue: number[]) => void; // Callback function for value change
+    inverted: boolean;
   }
 
   interface SliderData {
@@ -30,7 +31,7 @@ import { useEffect, useState } from 'react';
 
   
 
-export default function RangeSlider({ sensor, value, onChange }: RangeSliderProps) {
+export default function RangeSlider({ sensor, value, onChange, inverted }: RangeSliderProps) {
   const [init, setInit] = useState<number[]>([40, 60]); // Use state to store the range
   const [error, setError] = useState<string | null>(null); // State to handle errors
   const fetchSliderData = async (): Promise<SliderData[] | null> => {
@@ -96,15 +97,53 @@ export default function RangeSlider({ sensor, value, onChange }: RangeSliderProp
     onChange(newValue as number[]);
   };
 
-  return (
-    <Box sx={{ width: 300 }}>
-      <Slider
-        getAriaLabel={() => 'Temperature range'}
-        value={init}
-        onChange={handleChange}
-        valueLabelDisplay="auto"
-        getAriaValueText={valuetext}
-      />
-    </Box>
-  );
+  if (inverted) {
+    return (
+      <Box sx={{ width: 300 }}>
+        <Slider
+          getAriaLabel={() => 'Temperature range'}
+          value={init}
+          onChange={handleChange}
+          valueLabelDisplay="auto"
+          getAriaValueText={valuetext}
+          track='inverted'
+          sx={{
+            // color: 'primary.main', // Change the color of the slider
+            color: 'red', 
+            '& .MuiSlider-rail': {
+              backgroundColor: 'red', // Rail color
+            },
+            '& .MuiSlider-track': {
+              backgroundColor: '#ff9b94', // Track color
+            },
+          }}
+        />
+      </Box>
+    );
+  } else {
+    return (
+      <Box sx={{ width: 300 }}>
+        <Slider
+          getAriaLabel={() => 'Temperature range'}
+          value={init}
+          onChange={handleChange}
+          valueLabelDisplay="auto"
+          getAriaValueText={valuetext}
+          sx={{
+            // color: 'primary.main', // Change the color of the slider
+            color: 'green', // Change the color of the slider
+            // '& .MuiSlider-thumb': {
+            //   backgroundColor: 'secondary.main', // Thumb color
+            // },
+            // '& .MuiSlider-track': {
+            //   backgroundColor: 'success.main', // Track color
+            // },
+            '& .MuiSlider-rail': {
+              backgroundColor: 'green', // Rail color
+            },
+          }}
+        />
+      </Box>
+    );
+  }
 }

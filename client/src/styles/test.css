@@ -40,6 +40,8 @@
 .sensor-title {
   font-size: 10em;
   color: black;
+  background-color: #3d8bd9; /* Set a default background color */
+
 }
 
 .graph-title-row {
@@ -53,4 +55,18 @@
   } */
 a {
   color: beige;
+
+}
+
+.submit-param-btn {
+  border-radius: 8px;
+  border: #6eaeee;
+  background-color: #efecec;
+  text-align: center;
+  padding: 1vh 1vw;
+}
+
+.submit-param-btn:hover {
+  background-color: #6eaeee;
+  transform: background-color 0.4s ease;
 }

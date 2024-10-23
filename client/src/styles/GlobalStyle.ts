@@ -153,6 +153,10 @@ export const GlobalStyle = createGlobalStyle`
     max-height: 80vh;
   }
 
+  canvas {
+    margin: 0 1vw;
+  }
+
   .time-btn {
     padding: 15px 20px;
     font-size: 24px;
@@ -226,40 +230,132 @@ export const GlobalStyle = createGlobalStyle`
   //   }
   // }
 
-  .modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
+    .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
 
-/* Modal Content/Box */
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
-}
+  /* Modal Content/Box */
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    color: rgb(0, 0, 0);
+    }
 
-/* The Close Button */
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
+    
+  /* The Close Button */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
 
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .slider-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .slider-panel p {
+    margin: 0 3vw 0 3vw;
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  .slider-row {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .row-item {
+  flex: 1
+  }
+
+  .submit-param-btn {
+    border-radius: 30px;
+    border: #6eaeee;
+    background-color: #efecec;
+    text-align: center;
+    padding: 1vh 1vw;
+    border-style: solid;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  
+  .submit-param-btn:hover {
+    background-color: #6eaeee;
+    cursor: pointer;
+    color: #efecec;
+
+  }
+
+  #myBtn {
+    width: 50px;
+    height: auto;
+    // margin-right: 1vw;
+  }
+
+  #myBtn:hover {
+    cursor: pointer;
+  }
+
+  .hover-container {
+    display: inline-block;
+    position: relative;
+    padding: 10px;
+    border-radius: 50%; /* Ensures circular background */
+    background-color: transparent; /* Default background is transparent */
+    // transition: background-color 0.4s ease, transform 0.4s ease;
+  }
+
+  .hover-container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background-color: #18c7d0; /* Circle color */
+    transition: all 0.4s ease;
+    transform: translate(-50%, -50%) scale(0); /* Start small and centered */
+    z-index: 0; /* Behind the image */
+  }
+
+  .hover-container img {
+    position: relative;
+    z-index: 1; /* Ensures the image stays above the background */
+    width: 100px; /* Adjust size as needed */
+    height: 100px;
+    // display: block;
+  }
+
+// .hover-container:hover {
+//   background-color: #3498db; /* Background color on hover */
+//   // transform: scale(1.1); /* Optional: Slightly enlarge the circle on hover */
+// }
+  .hover-container:hover::before {
+    width: 60px; /* Final circle size (adjust as needed) */
+    height: 60px;
+    transform: translate(-50%, -50%) scale(1); /* Fully visible and centered */
+  }
 `

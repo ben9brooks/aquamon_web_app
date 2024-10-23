@@ -6,6 +6,7 @@ import * as Utils from './/scripts/utils.js'
 import 'chartjs-adapter-date-fns';
 import { config } from 'webpack'
 import chevron from '../public/images/next.png';
+import settings from '../public/images/settings.png';
 import RangeSlider from './components/RangeSlider'
 
 const hourTitle = "Temperature Over the Last Hour"
@@ -73,6 +74,12 @@ function set_button_press_style(type: string) {
   document.getElementById(type)!.className = 'time-btn time-pressed';
 }
 
+async function get_parameter_value(userId: number, name: string): Promise<number> {
+  const response = await fetch(`http://localhost:5001/user-parameters/${userId}/${name}`);
+  const data = await response.json();
+  return data[0][name];
+}
+
 export function Temp() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
   const chartInstanceRef = useRef<Chart | null>(null) // To store the chart instance
@@ -86,9 +93,19 @@ export function Temp() {
   const [sliderValueWarn, setSliderValueWarn] = useState<number[]>([40, 60]);
   const [sliderValueAlert, setSliderValueAlert] = useState<number[]>([40, 60]);
 
-  const LOWER_THRESHOLD = 70;
-  const UPPER_THRESHOLD = 80;
-  
+  useEffect(() => {
+    const fetchSliderValue = async () => {
+      const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
+      const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
+      const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
+      const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
+      setSliderValueWarn([tempWarnMin, tempWarnMax]);
+      setSliderValueAlert([tempAlertMin, tempAlertMax]);
+    };
+
+    fetchSliderValue();
+  }, []); //occurs on-load of Temp page
+
   const handleSliderChangeWarn = (newValue: number[]) => {
     console.log("change", newValue);
     setSliderValueWarn(newValue); // Update the state with the new value
@@ -145,7 +162,6 @@ export function Temp() {
 
   useEffect(() => {
     // fetchData();
-    console.log('fetching')
 
     if (!chartRef.current) return
 
@@ -158,24 +174,24 @@ export function Temp() {
     }
 
     const pointFillColors = chartData.map(point => {
-      if (point.y < LOWER_THRESHOLD || point.y > UPPER_THRESHOLD) {
+      if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
         return 'red'; // Red fill for out of range
-      } else if (point.y === LOWER_THRESHOLD || point.y === UPPER_THRESHOLD) {
+      } else if (point.y === sliderValueWarn[0] || point.y === sliderValueWarn[1]) {
         return 'orange'; // Orange fill for boundary
       }
       return 'green'; // Green fill for in range
     });
 
     const pointBorderColors = chartData.map(point => {
-      if (point.y < LOWER_THRESHOLD || point.y > UPPER_THRESHOLD) {
+      if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
         return 'darkred'; // Dark red border for out of range
-      } else if (point.y === LOWER_THRESHOLD || point.y === UPPER_THRESHOLD) {
+      } else if (point.y === sliderValueWarn[0] || point.y === sliderValueWarn[1]) {
         return 'orange'; // Orange border for boundary
       }
       return 'green'; // Blue border for in range
     });
 
-    const lineColor = chartData.some(point => point.y < LOWER_THRESHOLD || point.y > UPPER_THRESHOLD) ? 'red' : 'green';
+    const lineColor = chartData.some(point => point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) ? 'red' : 'green';
 
     const dataset = {
       label: 'Temperature',
@@ -239,7 +255,7 @@ export function Temp() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [chartData, timeUnit, timeMin, graphTitle, minY, maxY])
+  }, [chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert]) //could prevent twitching by removing slider vars with new one on submit click
 
   // const myChart = new Chart(
   //   document.getElementById('deez'),
@@ -313,7 +329,10 @@ export function Temp() {
           <img src= {chevron} alt='no img' />
         </Link>
         <h2 className='sensor-page-title'>Temperature</h2>
-        <button id="myBtn" onClick={() => {modal!.style.display = "block";}}>Open Modal</button>
+        <div className='hover-container'>
+          <img id="myBtn" src={settings} onClick={() => {modal!.style.display = "block";}}/>
+        </div>
+        {/* <button id="myBtn" onClick={() => {modal!.style.display = "block";}}>Open Modal</button> */}
       </div>
       <div className='btn-row'>
         <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
@@ -328,12 +347,26 @@ export function Temp() {
 
       <div className="modal-content">
         <span className="close" onClick={() => {modal!.style.display = "none"}}>&times;</span>
-        <p>Some text in the Modal..</p>
-        <RangeSlider sensor="temp-green" value={sliderValueWarn} onChange={handleSliderChangeWarn}/>
-        <RangeSlider sensor="temp-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert}/>
-        <button onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert)}}>SUBMIT</button>
-        <p>Slider values: [{sliderValueWarn[0]}, {sliderValueWarn[1]}]</p>
-        <p>Slider values: [{sliderValueAlert[0]}, {sliderValueAlert[1]}]</p>
+        <h2>Temperature Warning Settings</h2>
+        <div className='slider-panel'>
+          <div className='slider-row'>
+            <div className='row-item'>
+              <RangeSlider sensor="temp-green" value={sliderValueWarn} onChange={handleSliderChangeWarn} inverted={false}/>
+            </div>
+            <div>
+              <p className='row-item'>Healthy Range: {sliderValueWarn[0]} to {sliderValueWarn[1]} °F</p>
+            </div>
+          </div>
+          <div className='slider-row'>
+            <div className='row-item'>
+              <RangeSlider sensor="temp-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert} inverted={true} />
+            </div>
+            <div className='row-item'>
+              <p>Alert Range: Below {sliderValueAlert[0]} and Above {sliderValueAlert[1]} °F</p>
+            </div>
+          </div>
+        </div>
+        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert)}}>Submit</button>
       </div>
 
     </div>

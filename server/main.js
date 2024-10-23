@@ -133,6 +133,15 @@ app.get('/user-parameters/:user_id', (req, res) => {
 
 })
 
+app.get('/user-parameters/:user_id/:name', (req, res) => {
+  const userId = req.params.user_id;
+  const name = req.params.name;
+  const data = db.prepare(`SELECT ${name} FROM user_parameters WHERE user_id = ${userId}`).all();
+  console.log(data);
+  res.json(data)
+
+})
+
 
 app.put('/upload-user-parameters/:user_id', (req, res) => {
   const userId = req.params.user_id;
