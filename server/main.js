@@ -14,6 +14,8 @@ app.use(cors({
   origin: 'http://localhost:3000' // Allow only your frontend origin
 }));
 
+app.use(express.json());
+
 // Open the existing database
 const db = Database("database.db");
 
@@ -135,10 +137,15 @@ app.get('/user-parameters/:user_id', (req, res) => {
 app.put('/upload-user-parameters/:user_id', (req, res) => {
   const userId = req.params.user_id;
   const updatedData = req.body;
-  console.log("PUT?", updatedData)
-  // const userId = req.params.user_id;
-  // const data = db.prepare('SELECT * FROM user_parameters WHERE user_id = ?').all(userId);
-  // res.json(data)
+  // console.log("PUT?", updatedData)
 
+  // should add error handling...
+  for( const key in updatedData) {
+    if( updatedData[key] != -100){
+      console.log(`${key} ${updatedData[key]}`);
+      const post = db.prepare(`UPDATE user_parameters SET ${key} = ${updatedData[key]} WHERE user_id = ${userId}`);
+      post.run();
+    }
+  }
 })
 

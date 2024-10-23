@@ -281,6 +281,7 @@ export function Temp() {
   const upload_parameters = async (userId: number, updatedDataWarn: number[], updatedDataAlert: number[] ): Promise<void> => {
     const newJohn = new SliderDataConstructor(updatedDataWarn[0], updatedDataWarn[1], updatedDataAlert[0], updatedDataAlert[1])    
     console.log("submit press", newJohn);
+    console.log(JSON.stringify(newJohn)); 
     try {
       const response = await fetch(`http://localhost:5001/upload-user-parameters/${userId}`, {
         method: 'PUT', // Specify the method
