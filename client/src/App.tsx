@@ -1,8 +1,10 @@
 import { GlobalStyle } from './styles/GlobalStyle'
 import { DebugToggleStyle } from './styles/DebugToggle'
 import { useState, useEffect } from 'react'
-import { Outlet, Link } from 'react-router-dom'
-import deez from '../public/images/underwater_high_small.png'
+import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { useAuth } from './AuthContext'; 
+import deez from '../public/images/underwater.png'
+import logoutPNG from '../public/images/logout.png'
 
 interface Sensors {
   temp: number
@@ -151,12 +153,20 @@ function ToggleDebug({
 }
 
 export function App() {
+  const { logout } = useAuth(); // Get the logout function
+  const navigate = useNavigate(); // Hook for navigation
   const [isDebug, setDebug] = useState(false)
   const toggleDebug = () => {
     console.log('Changing debug from', isDebug, 'to', !isDebug)
     setDebug(!isDebug)
     console.log('isDebug is now', isDebug)
   }
+
+  const handleLogout = () => {
+    logout(); // Call the logout function
+    navigate('/login'); // Navigate to the login page
+  };
+
 
   return (
     <>
@@ -171,11 +181,19 @@ export function App() {
         height: '100vh',
       }}>
       <DebugToggleStyle />
-      <div className='title'>
-        <h1><b>AquaMon Dashboard</b></h1>
+      <div className='header'>
+        <div className='title'>
+          <h1>
+            <b>AquaMon Dashboard</b>
+          </h1>
+        </div>
+        <div className='hover-container-logout'>
+          <img id="myBtn2" src={logoutPNG} onClick={handleLogout}/>
+        </div>
       </div>
       <Sensors isDebug={isDebug} />
       <ToggleDebug isDebug={isDebug} toggleDebug={toggleDebug} />
+      
     </div>
     </>
   )

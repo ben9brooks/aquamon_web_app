@@ -1,40 +1,63 @@
-import ReactDOM from 'react-dom/client'
-import { App } from './App'
-import { Temp } from './Temp'
-import { PH } from './PH'
-import { Tds } from './Tds'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import * as React from 'react'
-import { Link } from 'react-router-dom'
+// index.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { App } from './App';
+import { Temp } from './Temp';
+import { PH } from './PH';
+import { Tds } from './Tds';
+import { Login } from './Login';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
+import { AuthProvider } from './AuthContext';
+import ProtectedRoute from './ProtectedRoute';
 
 const router = createBrowserRouter([
   {
+    path: '/',
+    element: <Navigate to="/login" replace />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
     path: '/main_window',
-    element: <App />,
-    errorElement: <p>see index.tsx for errors - home page</p>,
+    element: (
+      <ProtectedRoute>
+        <App />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/temp',
-    element: <Temp />,
-    errorElement: <p>see index.tsx for errors - temp page</p>,
+    element: (
+      <ProtectedRoute>
+        <Temp />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/ph',
-    element: <PH />,
-    errorElement: <p>see index.tsx for errors - ph page</p>,
+    element: (
+      <ProtectedRoute>
+        <PH />
+      </ProtectedRoute>
+    ),
   },
   {
     path: '/tds',
-    element: <Tds />,
-    errorElement: <p>see index.tsx for errors - tds page</p>,
+    element: (
+      <ProtectedRoute>
+        <Tds />
+      </ProtectedRoute>
+    ),
   },
-])
+]);
 
-const root = ReactDOM.createRoot(document.getElementById('root'))
+const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
-)
-
-// ReactDOM.render(<App />, document.getElementById('root'))
+);

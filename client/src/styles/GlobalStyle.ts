@@ -318,6 +318,16 @@ export const GlobalStyle = createGlobalStyle`
     cursor: pointer;
   }
 
+  #myBtn2 {
+    width: 30px;
+    height: auto;
+    // margin-right: 1vw;
+  }
+
+  #myBtn2:hover {
+    cursor: pointer;
+  }
+
   .hover-container {
     display: inline-block;
     position: relative;
@@ -358,4 +368,82 @@ export const GlobalStyle = createGlobalStyle`
     height: 60px;
     transform: translate(-50%, -50%) scale(1); /* Fully visible and centered */
   }
-`
+
+  .header {
+    display: flex; /* Use flexbox for layout */
+    justify-content: space-between; /* Space between title and button */
+    align-items: center; /* Align items vertically centered */
+    padding: 20px; /* Add some padding */
+  }
+  
+  .title {
+    flex-grow: 1; /* Allow title to take up remaining space */
+    text-align: center; /* Center the title text */
+  }
+
+  .title b {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 60px;
+    color: #54BB8C;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    -webkit-text-stroke: 3px black;
+    // overflow: hidden;
+  }
+  
+  .logout-button {
+    background-color: #f44336; /* Example button color */
+    color: white; /* Button text color */
+    border: none; /* No border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 20px; /* Padding for button */
+    cursor: pointer; /* Cursor style on hover */
+    transition: background-color 0.3s; /* Transition effect */
+  }
+  
+  .logout-button:hover {
+    background-color: #d32f2f; /* Darker shade on hover */
+  }
+
+  .hover-container-logout {
+    display: inline-block;
+    position: relative;
+    padding: 10px;
+    border-radius: 50%; /* Ensures circular background */
+    background-color: transparent; /* Default background is transparent */
+    // transition: background-color 0.4s ease, transform 0.4s ease;
+  }
+
+  .hover-container-logout::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background-color: white; /* Circle color */
+    transition: all 0.4s ease;
+    transform: translate(-50%, -50%) scale(0); /* Start small and centered */
+    z-index: 0; /* Behind the image */
+  }
+
+  .hover-container-logout img {
+    position: relative;
+    z-index: 1; /* Ensures the image stays above the background */
+    width: 25px; /* Adjust size as needed */
+    height: 25px;
+    // display: block;
+  }
+
+// .hover-container-logout:hover {
+//   background-color: #3498db; /* Background color on hover */
+//   // transform: scale(1.1); /* Optional: Slightly enlarge the circle on hover */
+// }
+  .hover-container-logout:hover::before {
+    width: 60px; /* Final circle size (adjust as needed) */
+    height: 60px;
+    transform: translate(-50%, -50%) scale(1); /* Fully visible and centered */
+  }
+  `

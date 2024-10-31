@@ -158,3 +158,12 @@ app.put('/upload-user-parameters/:user_id', (req, res) => {
   }
 })
 
+app.get('/login/:email/:password', (req, res) => {
+  const email = req.params.email;
+  const password = req.params.password;
+  const data = db.prepare('SELECT * FROM user WHERE email = ? AND password = ?').all(email, password);
+  res.json(data)
+
+  console.log(data.body)
+
+})
