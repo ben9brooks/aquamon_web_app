@@ -351,15 +351,15 @@ export function Temp() {
         <div className='slider-panel'>
           <div className='slider-row'>
             <div className='row-item'>
-              <RangeSlider sensor="temp-green" value={sliderValueWarn} onChange={handleSliderChangeWarn} inverted={false}/>
+              <RangeSlider sensor="temp-green" value={sliderValueWarn} onChange={handleSliderChangeWarn} inverted={false} minBound={0} maxBound={100} step={1}/>
             </div>
-            <div>
-              <p className='row-item'>Healthy Range: {sliderValueWarn[0]} to {sliderValueWarn[1]} °F</p>
+            <div className='row-item'>
+              <p>Healthy Range: {sliderValueWarn[0]} to {sliderValueWarn[1]} °F</p>
             </div>
           </div>
           <div className='slider-row'>
             <div className='row-item'>
-              <RangeSlider sensor="temp-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert} inverted={true} />
+              <RangeSlider sensor="temp-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert} inverted={true} minBound={0} maxBound={100} step={1}/>
             </div>
             <div className='row-item'>
               <p>Alert Range: Below {sliderValueAlert[0]} and Above {sliderValueAlert[1]} °F</p>

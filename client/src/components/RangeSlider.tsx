@@ -12,6 +12,9 @@ import { useEffect, useState } from 'react';
     value: number[]; 
     onChange: (newValue: number[]) => void; // Callback function for value change
     inverted: boolean;
+    minBound: number;
+    maxBound: number;
+    step: number;
   }
 
   interface SliderData {
@@ -31,7 +34,7 @@ import { useEffect, useState } from 'react';
 
   
 
-export default function RangeSlider({ sensor, value, onChange, inverted }: RangeSliderProps) {
+export default function RangeSlider({ sensor, value, onChange, inverted, minBound, maxBound, step }: RangeSliderProps) {
   const [init, setInit] = useState<number[]>([40, 60]); // Use state to store the range
   const [error, setError] = useState<string | null>(null); // State to handle errors
   const fetchSliderData = async (): Promise<SliderData[] | null> => {
@@ -91,10 +94,19 @@ export default function RangeSlider({ sensor, value, onChange, inverted }: Range
   // console.log('fetched init', init)
   // const [value, setValue] = React.useState<number[]>(init);
   
-  const handleChange = (event: Event, newValue: number | number[]) => {
-    // setValue(newValue as number[]);
-    setInit(newValue as number[]); //handles visual sliding
-    onChange(newValue as number[]);
+  const handleChange = (event: Event, newValue: number[]) => {
+    // change if the change is within the props' bounds. If so, change. Else, clamp to that edge.
+    // let curMin = 
+    if (newValue[1] > maxBound ) {
+      setInit([newValue[0], maxBound]); 
+      onChange([newValue[0], maxBound]);
+    } else if (newValue[0] < minBound) {
+      setInit([minBound, newValue[1] ]); 
+      onChange([minBound, newValue[1] ]);
+    } else{
+      setInit(newValue as number[]); //handles visual sliding
+      onChange(newValue as number[]);
+    }
   };
 
   if (inverted) {
@@ -103,6 +115,9 @@ export default function RangeSlider({ sensor, value, onChange, inverted }: Range
         <Slider
           getAriaLabel={() => 'Temperature range'}
           value={init}
+          min={minBound}
+          max={maxBound}
+          step={step}
           onChange={handleChange}
           valueLabelDisplay="auto"
           getAriaValueText={valuetext}
@@ -116,6 +131,7 @@ export default function RangeSlider({ sensor, value, onChange, inverted }: Range
             '& .MuiSlider-track': {
               backgroundColor: '#ff9b94', // Track color
             },
+          
           }}
         />
       </Box>
@@ -126,6 +142,9 @@ export default function RangeSlider({ sensor, value, onChange, inverted }: Range
         <Slider
           getAriaLabel={() => 'Temperature range'}
           value={init}
+          min={minBound}
+          max={maxBound}
+          step={step}
           onChange={handleChange}
           valueLabelDisplay="auto"
           getAriaValueText={valuetext}

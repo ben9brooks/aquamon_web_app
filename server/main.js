@@ -4,6 +4,8 @@ const Database = require("better-sqlite3"); //.verbose();
 const path = require("path");
 const { time } = require("console");
 const cors = require('cors');
+const nodemailer = require("nodemailer");
+require('dotenv').config();
 // const moment = require("moment"); // Or use the Date object directly!!!!!!
 
 const app = express();
@@ -22,7 +24,6 @@ const db = Database("database.db");
 // Fetch data and insert into the database
 async function fetchDataAndStore() {
   let output = [];
-
   try {
     const response = await fetch(
       "https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors"
@@ -31,6 +32,7 @@ async function fetchDataAndStore() {
       throw new Error(`Network response was not ok: ${response.statusText}`);
     }
     const data = await response.json();
+    // console.log(data);
 
     const timestamp = Math.floor(new Date().getTime()); // Get current date/time in ISO format IN SECONDS
     console.log(timestamp);
@@ -61,9 +63,31 @@ async function fetchDataAndStore() {
     }
 
     console.log("Data inserted successfully");
+    // check if fetched values are at dangerous levels
+    const response2 = await fetch(`http://localhost:5001/user-parameters/${0}`);
+    const user_param = await response2.json();
+  
+    const email = db.prepare('SELECT email FROM user WHERE id = ?').all(0);
+  
+    if( data[0].temp < user_param[0].temp_alert_min || data[0].temp > user_param[0].temp_alert_max) {
+      sendAlertEmail('Temperature', data[0].temp, email);
+      console.log("temp alert email");
+    }
+    console.log(data[0].ph, user_param[0].ph_alert_max, user_param[0].ph_alert_min);
+    
+    if( data[0].ph < user_param[0].ph_alert_min || data[0].ph > user_param[0].ph_alert_max) {
+      console.log("ph alert email");
+      sendAlertEmail('pH', data[0].ph, email);
+    }
+    if( data.tds < user_param.tds_alert_min || data.tds > user_param.tds_alert_max) {
+      sendAlertEmail('TDS', data.tds, email);
+      console.log("tds alert email");
+    }
   } catch (error) {
     console.error("Error fetching data or inserting into the database:", error);
   }
+
+
   return output;
 }
 
@@ -107,7 +131,7 @@ app.get("/temp", (req, res) => {
 
 app.listen(port, () => {
   console.log(`BACKEND started on port ${port}`);
-  setInterval(fetchDataAndStore, 50000);
+  setInterval(fetchDataAndStore, 5000);
   setInterval(cleanTable, 600000);
 });
 
@@ -130,7 +154,6 @@ app.get('/user-parameters/:user_id', (req, res) => {
   const userId = req.params.user_id;
   const data = db.prepare('SELECT * FROM user_parameters WHERE user_id = ?').all(userId);
   res.json(data)
-
 })
 
 app.get('/user-parameters/:user_id/:name', (req, res) => {
@@ -167,3 +190,29 @@ app.get('/login/:email/:password', (req, res) => {
   console.log(data.body)
 
 })
+
+// Configure email transport (replace with your SMTP settings)
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // e.g., 'gmail', or use a custom SMTP server
+  auth: {
+    user: process.env.EMAIL_USER, 
+    pass: 'wivn wlyp cyvv acfx',//process.env.EMAIL_PASS, 
+  },
+});
+
+async function sendAlertEmail(sensorType, value, email) {
+  const message = {
+    from: '"AquaMon" <aquamon.notifications@gmail.com>', // sender address
+    to: email, // list of receivers
+    subject: `${sensorType} Alert - AquaMon`,
+    text: `Warning! ${sensorType} is out of range. Current value: ${value}`,
+    html: `<p>Warning! <b>${sensorType}</b> is out of range.</p><p>Current value: <b>${value}</b></p>`,
+  };
+
+  try {
+    const info = await transporter.sendMail(message);
+    console.log('Email sent:', info.response);
+  } catch (error) {
+    console.error('Error sending email:', error);
+  }
+}

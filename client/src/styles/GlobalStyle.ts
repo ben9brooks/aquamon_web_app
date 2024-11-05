@@ -269,26 +269,32 @@ export const GlobalStyle = createGlobalStyle`
     cursor: pointer;
   }
 
+  .slider-panel p {
+    // margin: 0 3vw 0 3vw;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-right: auto;
+    margin-left: 0;
+  }
   .slider-panel {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .slider-panel p {
-    margin: 0 3vw 0 3vw;
-    margin-top: auto;
-    margin-bottom: auto;
+    align-items: stretch; /* Ensures the .slider-row divs take full width */
+    gap: 10px; /* Optional: add spacing between rows */
+    width: 100%;
   }
 
   .slider-row {
     display: flex;
-    flex-direction: row;
+    width: 100%;
   }
 
   .row-item {
-  flex: 1
+    flex: 1; /* Ensures the row items take equal width */
+    display: flex;
+    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center content horizontally */
+    text-align: center;
   }
 
   .submit-param-btn {

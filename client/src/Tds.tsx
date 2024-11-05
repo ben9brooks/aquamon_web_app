@@ -93,16 +93,16 @@ export function Tds() {
 
   useEffect(() => {
     const fetchSliderValue = async () => {
-      const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
-      const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
-      const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
-      const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
-      setSliderValueWarn([tempWarnMin, tempWarnMax]);
-      setSliderValueAlert([tempAlertMin, tempAlertMax]);
+      const tdsWarnMin = await get_parameter_value(0, 'tds_warn_min');
+      const tdsWarnMax = await get_parameter_value(0, 'tds_warn_max');
+      const tdsAlertMin = await get_parameter_value(0, 'tds_alert_min');
+      const tdsAlertMax = await get_parameter_value(0, 'tds_alert_max');
+      setSliderValueWarn([tdsWarnMin, tdsWarnMax]);
+      setSliderValueAlert([tdsAlertMin, tdsAlertMax]);
     };
 
     fetchSliderValue();
-  }, []); //occurs on-load of Temp page
+  }, []); //occurs on-load of TDS page
 
   const handleSliderChangeWarn = (newValue: number[]) => {
     console.log("change", newValue);
@@ -339,15 +339,15 @@ export function Tds() {
           <div className='slider-panel'>
             <div className='slider-row'>
               <div className='row-item'>
-                <RangeSlider sensor="tds-green" value={sliderValueWarn} onChange={handleSliderChangeWarn} inverted={false}/>
+                <RangeSlider sensor="tds-green" value={sliderValueWarn} onChange={handleSliderChangeWarn} inverted={false}  minBound={0} maxBound={500} step={1}/>
               </div>
-              <div>
-                <p className='row-item'>Healthy Range: {sliderValueWarn[0]} to {sliderValueWarn[1]} ppm</p>
+              <div className='row-item'>
+                <p>Healthy Range: {sliderValueWarn[0]} to {sliderValueWarn[1]} ppm</p>
               </div>
             </div>
             <div className='slider-row'>
               <div className='row-item'>
-                <RangeSlider sensor="tds-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert} inverted={true} />
+                <RangeSlider sensor="tds-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert} inverted={true} minBound={0} maxBound={500} step={1}/>
               </div>
               <div className='row-item'>
                 <p>Alert Range: Below {sliderValueAlert[0]} and Above {sliderValueAlert[1]} ppm</p>

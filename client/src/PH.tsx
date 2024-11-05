@@ -92,12 +92,12 @@ export function PH() {
 
   useEffect(() => {
     const fetchSliderValue = async () => {
-      const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
-      const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
-      const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
-      const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
-      setSliderValueWarn([tempWarnMin, tempWarnMax]);
-      setSliderValueAlert([tempAlertMin, tempAlertMax]);
+      const phWarnMin = await get_parameter_value(0, 'ph_warn_min');
+      const phWarnMax = await get_parameter_value(0, 'ph_warn_max');
+      const phAlertMin = await get_parameter_value(0, 'ph_alert_min');
+      const phAlertMax = await get_parameter_value(0, 'ph_alert_max');
+      setSliderValueWarn([phWarnMin, phWarnMax]);
+      setSliderValueAlert([phAlertMin, phAlertMax]);
     };
 
     fetchSliderValue();
@@ -337,15 +337,15 @@ export function PH() {
         <div className='slider-panel'>
           <div className='slider-row'>
             <div className='row-item'>
-              <RangeSlider sensor="ph-green" value={sliderValueWarn} onChange={handleSliderChangeWarn} inverted={false}/>
+              <RangeSlider sensor="ph-green" value={sliderValueWarn} onChange={handleSliderChangeWarn} inverted={false} minBound={0} maxBound={14} step={0.5}/>
             </div>
-            <div>
-              <p className='row-item'>Healthy Range: {sliderValueWarn[0]} to {sliderValueWarn[1]}</p>
+            <div className='row-item'>
+              <p>Healthy Range: {sliderValueWarn[0]} to {sliderValueWarn[1]}</p>
             </div>
           </div>
           <div className='slider-row'>
             <div className='row-item'>
-              <RangeSlider sensor="ph-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert} inverted={true} />
+              <RangeSlider sensor="ph-yellow" value={sliderValueAlert} onChange={handleSliderChangeAlert} inverted={true} minBound={0} maxBound={14} step={0.5}/>
             </div>
             <div className='row-item'>
               <p>Alert Range: Below {sliderValueAlert[0]} and Above {sliderValueAlert[1]}</p>
