@@ -2,9 +2,10 @@ import { GlobalStyle } from './styles/GlobalStyle'
 import { DebugToggleStyle } from './styles/DebugToggle'
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { useAuth } from './AuthContext'; 
-import deez from '../public/images/underwater.png'
+import { useAuth } from './AuthContext'
+import deez from '../public/images/underwater.png';
 import logoutPNG from '../public/images/logout.png'
+
 
 interface Sensors {
   temp: number
@@ -18,40 +19,36 @@ const dummy: Sensors = {
   tds: -1,
 }
 
-async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
+export async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
   const addr = 'http://192.168.0.175/sensors'
   const mockAddr = 'https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors'
   console.log('Debug Mode is', isDebug)
   if (isDebug) {
     console.log('fetching', mockAddr)
     const response = await fetch(mockAddr)
-    console.log('response', response)
     if (response.status >= 200 && response.status < 300) {
       const data = await response.json()
-      console.log('returning data and setting sensor var', data)
-      return data[0]
+      return data[0] // assuming the API returns an array of sensors
     }
   } else {
     try {
       console.log('fetching', addr)
       const response = await fetch(addr)
-      console.log('response', response)
       if (response.status >= 200 && response.status < 300) {
         const data = await response.json()
-        console.log('returning data and setting sensor var', data)
         return data
       } else {
         return dummy
       }
     } catch (e) {
-      //something here to display in UI that an error has occurred
+      console.error('Error while fetching:', e)
       return dummy
     }
   }
   return dummy
 }
 
-function getSensorClasses(
+export function getSensorClasses(
   val: number,
   warn_min: number,
   warn_max: number,
@@ -61,80 +58,111 @@ function getSensorClasses(
   let classes = 'circle '
   if (val == -1) {
     classes += 'black'
-  } else if (val <= hard_min || val >= hard_max) {
-    classes += 'red'
-  } else if (val <= warn_min || val >= warn_max) {
-    classes += 'yellow'
-  } else {
+  } else if (val > warn_min && val < warn_max) {
     classes += 'green'
+  } else if (val < hard_min || val > hard_max) {
+    classes += 'red'
+  } else {
+    classes += 'yellow'
   }
   return classes
 }
 
-function Sensors({ isDebug }: { isDebug: boolean }) {
+export function Sensors({ isDebug }: { isDebug: boolean }) {
   const [sensor, setSensorData] = useState<Sensors>(dummy)
-  // const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [userParam, setUserParam] = useState<any>(null) // Assuming user parameters come here
 
   useEffect(() => {
     async function fetchData() {
       try {
+        // Fetch sensor data
         const data = await fetchSensorData(isDebug)
         setSensorData(data)
-        // debugger;
+
+        // Fetch user parameters data
+        const response = await fetch(`http://localhost:5001/user-parameters/0`)
+        const userData = await response.json()
+        setUserParam(userData)
+
+        setLoading(false)
       } catch (error) {
-        console.log('got error while fetching', error)
-        // setError(error.message);
+        setError('Failed to fetch sensor data.')
+        setLoading(false)
+        console.error('Error while fetching data', error)
       }
     }
+
     fetchData()
 
-    // set to call itself at 5 second intervals
-    const intervalId = setInterval(fetchData, 5000)
-
-    return () => clearInterval(intervalId) // removes interval if sensor isn't rendered
+    const intervalId = setInterval(fetchData, 5000) // Refresh every 5 seconds
+    return () => clearInterval(intervalId) // Cleanup interval
   }, [isDebug])
 
-  if (sensor) {
-    return (
-      <div className="sensor-row">
-        <div className='sensor-entry'>
-          <h3 className='sensor-title'>Temperature</h3>
-          <Link to={`/temp`}>
-            <div className={getSensorClasses(sensor.temp, 50, 80, 40, 90)}>
-              <p>{sensor.temp}°F</p>
-            </div>
-          </Link>
-        </div>
-
-        <div className='sensor-entry'>
-          <h3 className='sensor-title'>pH</h3>
-          <Link to={`/ph`}>
-            <div className={getSensorClasses(sensor.ph, 8, 10, 5, 11)}>
-              <p>{sensor.ph}</p>
-            </div>
-          </Link>
-        </div>
-
-        <div className='sensor-entry'>
-          <h3 className='sensor-title'>TDS</h3>
-          <Link to={`/tds`}>
-            <div className={getSensorClasses(sensor.tds, 50, 80, 40, 90)}>
-              <p>{sensor.tds} ppm</p>
-            </div>
-          </Link>
-        </div>
-      </div>
-    )
-  } else {
-    return (
-      <div>
-        <p>Cannot fetch sensor data...</p>
-      </div>
-    )
+  if (loading) {
+    return <p>Cannot fetch sensor data...</p>
   }
+
+  if (error) {
+    return <p>{error}</p>
+  }
+
+  if (sensor.temp === -1 || sensor.ph === -1 || sensor.tds === -1) {
+    return <div><p>Cannot fetch sensor data...</p></div>
+  }
+
+  return (
+    <div className="sensor-row">
+      <div className='sensor-entry'>
+        <h3 className='sensor-title'>Temperature</h3>
+        <Link to={`/temp`}>
+          <div className={getSensorClasses(
+            sensor.temp,
+            userParam[0]?.temp_warn_min,
+            userParam[0]?.temp_warn_max,
+            userParam[0]?.temp_alert_min,
+            userParam[0]?.temp_alert_max
+          )}>
+            <p>{sensor.temp}°F</p>
+          </div>
+        </Link>
+      </div>
+
+      <div className='sensor-entry'>
+        <h3 className='sensor-title'>pH</h3>
+        <Link to={`/ph`}>
+          <div className={getSensorClasses(
+            sensor.ph,
+            userParam[0]?.ph_warn_min,
+            userParam[0]?.ph_warn_max,
+            userParam[0]?.ph_alert_min,
+            userParam[0]?.ph_alert_max
+          )}>
+            <p>{sensor.ph}</p>
+          </div>
+        </Link>
+      </div>
+
+      <div className='sensor-entry'>
+        <h3 className='sensor-title'>TDS</h3>
+        <Link to={`/tds`}>
+        <div className={getSensorClasses(
+            sensor.tds,
+            userParam[0]?.tds_warn_min,
+            userParam[0]?.tds_warn_max,
+            userParam[0]?.tds_alert_min,
+            userParam[0]?.tds_alert_max
+          )}>
+          <p>{sensor.tds} ppm</p>
+        </div>
+        </Link>
+      </div>
+    </div>
+  )
 }
 
-function ToggleDebug({
+export function ToggleDebug({
   isDebug,
   toggleDebug,
 }: {
