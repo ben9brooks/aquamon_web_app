@@ -154,7 +154,7 @@ export const GlobalStyle = createGlobalStyle`
   }
 
   canvas {
-    margin: 0 1vw;
+    margin: 0 0vw;
   }
 
   .time-btn {

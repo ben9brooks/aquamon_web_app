@@ -104,6 +104,11 @@ app.get("/test", async (req, res) => {
   }
 });
 
+function generate_lt_delete_query(table, timestamp) {
+  // generates 'Less Than' query with given table and timestamp.
+  return db.prepare(`DELETE FROM ${table} WHERE timestamp < ${timestamp}`);
+}
+
 // Drop old entries
 async function cleanTable() {
   // find timestamp 1 week ago and delete anything earlier
@@ -115,10 +120,15 @@ async function cleanTable() {
   // Subtract 1 week from the current time
   const aboutAWeekAgo = currentTime - oneWeekInS;
 
-  const deleteQuery = db.prepare(`
-    DELETE FROM temp WHERE timestamp < ?
-  `);
-  deleteQuery.run(aboutAWeekAgo);
+  // const deleteQuery = db.prepare(`
+  //   DELETE FROM ? WHERE timestamp < ?
+  // `);
+  generate_lt_delete_query('temp', aboutAWeekAgo).run();
+  generate_lt_delete_query('tds', aboutAWeekAgo).run();
+  generate_lt_delete_query('ph', aboutAWeekAgo).run();
+  // deleteQuery.run('temp', aboutAWeekAgo);
+  // deleteQuery.run('tds', aboutAWeekAgo);
+  // deleteQuery.run('ph', aboutAWeekAgo);
 
   console.log("Cleaned")
 }

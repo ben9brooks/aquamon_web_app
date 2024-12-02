@@ -92,19 +92,11 @@ export function Temp() {
   const [maxY, setMaxY] = useState<number>(-Infinity);
   const [sliderValueWarn, setSliderValueWarn] = useState<number[]>([40, 60]);
   const [sliderValueAlert, setSliderValueAlert] = useState<number[]>([40, 60]);
+  const [reloadGraph, setReloadGraph] = useState<boolean>(false);
 
-  useEffect(() => {
-    const fetchSliderValue = async () => {
-      const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
-      const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
-      const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
-      const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
-      setSliderValueWarn([tempWarnMin, tempWarnMax]);
-      setSliderValueAlert([tempAlertMin, tempAlertMax]);
-    };
-
-    fetchSliderValue();
-  }, []); //occurs on-load of Temp page
+  // useEffect(() => {
+    
+  // }, []); //occurs on-load of Temp page
 
   const handleSliderChangeWarn = (newValue: number[]) => {
     console.log("change", newValue);
@@ -151,13 +143,47 @@ export function Temp() {
     setMaxY(localMaxY);
     setMinY(localMinY);
 
-    setChartData(formattedData)
+    setChartData(formattedData);
+    setReloadGraph(!reloadGraph);
   }
   
   // setInterval(fetchData, 5000);
 
   useEffect(() => {
-    fetchData();
+    // const fetchSliderValue = async () => {
+    //   const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
+    //   const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
+    //   const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
+    //   const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
+    //   setSliderValueWarn([tempWarnMin, tempWarnMax]);
+    //   setSliderValueAlert([tempAlertMin, tempAlertMax]);
+    // };
+
+    // fetchSliderValue();
+
+    // fetchData();
+    const fetchAllData = async () => {
+      // Fetch slider values first
+      await fetchSliderValue();
+  
+      // Then fetch other data
+      fetchData();
+    };
+
+    const fetchSliderValue = async () => {
+      try {
+        const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
+        const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
+        const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
+        const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
+        setSliderValueWarn([tempWarnMin, tempWarnMax]);
+        setSliderValueAlert([tempAlertMin, tempAlertMax]);
+      } catch (error) {
+        console.error('Error fetching slider values:', error);
+      }
+    };
+
+    fetchAllData();
   }, []);
 
   useEffect(() => {
@@ -173,10 +199,11 @@ export function Temp() {
       chartInstanceRef.current.destroy()
     }
 
+    console.log('UPDATE', sliderValueAlert, sliderValueWarn);
     const pointFillColors = chartData.map(point => {
       if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
         return 'red'; // Red fill for out of range
-      } else if (point.y === sliderValueWarn[0] || point.y === sliderValueWarn[1]) {
+      } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
         return 'orange'; // Orange fill for boundary
       }
       return 'green'; // Green fill for in range
@@ -185,13 +212,25 @@ export function Temp() {
     const pointBorderColors = chartData.map(point => {
       if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
         return 'darkred'; // Dark red border for out of range
-      } else if (point.y === sliderValueWarn[0] || point.y === sliderValueWarn[1]) {
+      // } else if (point.y === sliderValueWarn[0] || point.y === sliderValueWarn[1]) {
+      } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
+
         return 'orange'; // Orange border for boundary
       }
       return 'green'; // Blue border for in range
     });
 
-    const lineColor = chartData.some(point => point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) ? 'red' : 'green';
+    const lineColor = chartData.map(point => {
+      if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
+        return 'darkred'; // Dark red border for out of range
+      } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
+
+        return 'orange'; // Orange border for boundary
+      }
+      return 'green'; // Blue border for in range
+    });
+
+    // const lineColor = chartData.some(point => point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) ? 'red' : 'green';
 
     const dataset = {
       label: 'Temperature',
@@ -255,7 +294,7 @@ export function Temp() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert]) //could prevent twitching by removing slider vars with new one on submit click
+  }, [reloadGraph]) //[chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert]) //could prevent twitching by removing slider vars with new one on submit click
 
   // const myChart = new Chart(
   //   document.getElementById('deez'),
@@ -335,9 +374,9 @@ export function Temp() {
         {/* <button id="myBtn" onClick={() => {modal!.style.display = "block";}}>Open Modal</button> */}
       </div>
       <div className='btn-row'>
-        <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
-        <button id='day-btn' className='time-btn' onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
-        <button id='week-btn' className='time-btn' onClick={() => {setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
+        <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
+        <button id='day-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
+        <button id='week-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
       </div>
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
         <canvas ref={chartRef} className='graph'></canvas>
@@ -366,7 +405,7 @@ export function Temp() {
             </div>
           </div>
         </div>
-        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert)}}>Submit</button>
+        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); setReloadGraph(!reloadGraph); }}>Submit</button>
       </div>
 
     </div>
