@@ -79,8 +79,9 @@ async function fetchDataAndStore() {
       console.log("ph alert email");
       sendAlertEmail('pH', data[0].ph, email);
     }
-    if( data.tds < user_param.tds_alert_min || data.tds > user_param.tds_alert_max) {
-      sendAlertEmail('TDS', data.tds, email);
+    if( data[0].tds < user_param[0].tds_alert_min || data[0].tds > user_param[0].tds_alert_max) {
+      //sendAlertEmail('TDS', data.tds, email);
+      sendAlertEmail('TDS', data[0].tds, 'gdobbelare4@gmail.com');
       console.log("tds alert email");
     }
   } catch (error) {
@@ -141,7 +142,7 @@ app.get("/temp", (req, res) => {
 
 app.listen(port, () => {
   console.log(`BACKEND started on port ${port}`);
-  setInterval(fetchDataAndStore, 5000);
+  setInterval(fetchDataAndStore, 60000);
   setInterval(cleanTable, 600000);
 });
 

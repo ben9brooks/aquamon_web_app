@@ -203,31 +203,19 @@ export function Temp() {
     const pointFillColors = chartData.map(point => {
       if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
         return 'red'; // Red fill for out of range
-      } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
-        return 'orange'; // Orange fill for boundary
+      } else if (point.y > sliderValueWarn[0] && point.y < sliderValueWarn[1]) {
+        return 'green'; // Orange fill for boundary
       }
-      return 'green'; // Green fill for in range
+      return 'yellow'; // Green fill for in range
     });
 
     const pointBorderColors = chartData.map(point => {
       if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
         return 'darkred'; // Dark red border for out of range
-      // } else if (point.y === sliderValueWarn[0] || point.y === sliderValueWarn[1]) {
-      } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
-
-        return 'orange'; // Orange border for boundary
+      } else if (point.y > sliderValueWarn[0] && point.y < sliderValueWarn[1]) {
+        return 'green'; // Orange border for boundary
       }
-      return 'green'; // Blue border for in range
-    });
-
-    const lineColor = chartData.map(point => {
-      if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
-        return 'darkred'; // Dark red border for out of range
-      } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
-
-        return 'orange'; // Orange border for boundary
-      }
-      return 'green'; // Blue border for in range
+      return 'yellow'; // Blue border for in range
     });
 
     // const lineColor = chartData.some(point => point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) ? 'red' : 'green';
@@ -235,7 +223,9 @@ export function Temp() {
     const dataset = {
       label: 'Temperature',
       data: chartData,
-      borderColor: lineColor, 
+      // borderColor: lineColor, 
+      borderWidth: 1,
+      borderColor: 'black',
       pointBackgroundColor: pointFillColors,
       pointBorderColor: pointBorderColors,
       pointBorderWidth: 2,
@@ -405,7 +395,7 @@ export function Temp() {
             </div>
           </div>
         </div>
-        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); setReloadGraph(!reloadGraph); }}>Submit</button>
+        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); setReloadGraph(!reloadGraph); modal!.style.display = "none";}}>Submit</button>
       </div>
 
     </div>

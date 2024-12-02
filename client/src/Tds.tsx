@@ -354,7 +354,7 @@ export function Tds() {
               </div>
             </div>
           </div>
-          <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert)}}>Submit</button>
+          <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); modal!.style.display = "none"}}>Submit</button>
         </div>
       </div>
     </>
