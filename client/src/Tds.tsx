@@ -90,18 +90,29 @@ export function Tds() {
   const [maxY, setMaxY] = useState<number>(-Infinity);
   const [sliderValueWarn, setSliderValueWarn] = useState<number[]>([120, 160]);
   const [sliderValueAlert, setSliderValueAlert] = useState<number[]>([120, 160]);
+  const [reloadGraph, setReloadGraph] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchSliderValue = async () => {
-      const tdsWarnMin = await get_parameter_value(0, 'tds_warn_min');
-      const tdsWarnMax = await get_parameter_value(0, 'tds_warn_max');
-      const tdsAlertMin = await get_parameter_value(0, 'tds_alert_min');
-      const tdsAlertMax = await get_parameter_value(0, 'tds_alert_max');
-      setSliderValueWarn([tdsWarnMin, tdsWarnMax]);
-      setSliderValueAlert([tdsAlertMin, tdsAlertMax]);
+      try {
+        const tdsWarnMin = await get_parameter_value(0, 'tds_warn_min');
+        const tdsWarnMax = await get_parameter_value(0, 'tds_warn_max');
+        const tdsAlertMin = await get_parameter_value(0, 'tds_alert_min');
+        const tdsAlertMax = await get_parameter_value(0, 'tds_alert_max');
+        setSliderValueWarn([tdsWarnMin, tdsWarnMax]);
+        setSliderValueAlert([tdsAlertMin, tdsAlertMax]);
+      } catch (error) {
+        console.error('Error fetching slider values:', error);
+      }
+    };
+    const fetchAllData = async () => {
+      // Fetch slider values first
+      await fetchSliderValue();
+      // Then fetch other data
+      fetchData();
     };
 
-    fetchSliderValue();
+    fetchAllData();
   }, []); //occurs on-load of TDS page
 
   const handleSliderChangeWarn = (newValue: number[]) => {
@@ -154,7 +165,8 @@ export function Tds() {
 
     // console.log(formattedData)
     console.log('min', timeMin);
-    setChartData(formattedData)
+    setChartData(formattedData);
+    setReloadGraph(!reloadGraph);
   }
   
   // setInterval(fetchData, 5000);
@@ -259,7 +271,7 @@ export function Tds() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert])
+  }, [reloadGraph])//[chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert])
 
   // const myChart = new Chart(
   //   document.getElementById('deez'),
@@ -324,9 +336,9 @@ export function Tds() {
           </div>
         </div>
         <div className='btn-row'>
-          <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
-          <button id='day-btn' className='time-btn' onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
-          <button id='week-btn' className='time-btn' onClick={() => {setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
+          <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
+          <button id='day-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
+          <button id='week-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
         </div>
         <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
           <canvas ref={chartRef} className='graph' ></canvas>
@@ -354,7 +366,7 @@ export function Tds() {
               </div>
             </div>
           </div>
-          <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); modal!.style.display = "none"}}>Submit</button>
+          <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); setReloadGraph(!reloadGraph); modal!.style.display = "none"}}>Submit</button>
         </div>
       </div>
     </>

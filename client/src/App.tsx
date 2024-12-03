@@ -2,14 +2,11 @@ import { GlobalStyle } from './styles/GlobalStyle'
 import { DebugToggleStyle } from './styles/DebugToggle'
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { useAuth } from './AuthContext'
+import { useAuth } from './AuthContext';
 import deez from '../public/images/underwater.png';
 import logoutPNG from '../public/images/logout.png'
 
-<<<<<<< HEAD
 const arduinoAddress = 'http://192.168.0.175/sensors';
-=======
->>>>>>> 385bcc8beb7ba7e426c332354c70f24c8eb8e835
 
 interface Sensors {
   temp: number
@@ -38,13 +35,23 @@ const dummy: Sensors = {
   tds: -1,
 }
 
-<<<<<<< HEAD
-async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
-  const addr = arduinoAddress;
-=======
+const dummyUserParams: UserParams = {
+  temp_warn_min: 50,
+  temp_warn_max: 80,
+  temp_alert_min: 40,
+  temp_alert_max: 90,
+  ph_warn_min: 8,
+  ph_warn_max: 10,
+  ph_alert_min: 5,
+  ph_alert_max: 11,
+  tds_warn_min: 50,
+  tds_warn_max: 80,
+  tds_alert_min: 40,
+  tds_alert_max: 90
+}
+
 export async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
-  const addr = 'http://192.168.0.175/sensors'
->>>>>>> 385bcc8beb7ba7e426c332354c70f24c8eb8e835
+  const addr = 'http://172.20.10.7/sensors'
   const mockAddr = 'https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors'
   console.log('Debug Mode is', isDebug)
   if (isDebug) {
@@ -92,26 +99,20 @@ export function getSensorClasses(
   return classes
 }
 
-<<<<<<< HEAD
 async function get_parameter_values(userId: number): Promise<UserParams> {
   const response = await fetch(`http://localhost:5001/user-parameters/${userId}`);
   const data = await response.json();
   return data[0];
 }
 
-function Sensors({ isDebug }: { isDebug: boolean }) {
+export function Sensors({ isDebug }: { isDebug: boolean }) {
   const [sensor, setSensorData] = useState<Sensors>(dummy)
   const [user_params_temp, setUserParamsTemp] = useState<number[]>([50, 80, 40, 90]);
   const [user_params_ph, setUserParamsPh] = useState<number[]>([8, 10, 5, 11]);
   const [user_params_tds, setUserParamsTds] = useState<number[]>([50, 80, 40, 90]);
-  // const [error, setError] = useState<string | null>(null);
-=======
-export function Sensors({ isDebug }: { isDebug: boolean }) {
-  const [sensor, setSensorData] = useState<Sensors>(dummy)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [userParam, setUserParam] = useState<any>(null) // Assuming user parameters come here
->>>>>>> 385bcc8beb7ba7e426c332354c70f24c8eb8e835
+  const [userParam, setUserParam] = useState<any>(dummyUserParams) // Assuming user parameters come here
 
   useEffect(() => {
     const fetchUserParams = async () => {
@@ -177,49 +178,44 @@ export function Sensors({ isDebug }: { isDebug: boolean }) {
     return () => clearInterval(intervalId) // Cleanup interval
   }, [isDebug])
 
-<<<<<<< HEAD
-  if (sensor) {
-    return (
-      <div className="sensor-row">
-        <div className='sensor-entry'>
-          <h3 className='sensor-title'>Temperature</h3>
-          <Link to={`/temp`}>
-            <div className={getSensorClasses(sensor.temp, user_params_temp[0], user_params_temp[1], user_params_temp[2], user_params_temp[3])}>
-              <p>{sensor.temp}°F</p>
-            </div>
-          </Link>
-        </div>
+  // if (sensor) {
+  //   return (
+  //     <div className="sensor-row">
+  //       <div className='sensor-entry'>
+  //         <h3 className='sensor-title'>Temperature</h3>
+  //         <Link to={`/temp`}>
+  //           <div className={getSensorClasses(sensor.temp, user_params_temp[0], user_params_temp[1], user_params_temp[2], user_params_temp[3])}>
+  //             <p>{sensor.temp}°F</p>
+  //           </div>
+  //         </Link>
+  //       </div>
 
-        <div className='sensor-entry'>
-          <h3 className='sensor-title'>pH</h3>
-          <Link to={`/ph`}>
-            <div className={getSensorClasses(sensor.ph, user_params_ph[0], user_params_ph[1], user_params_ph[2], user_params_ph[3])}>
-              <p>{sensor.ph}</p>
-            </div>
-          </Link>
-        </div>
+  //       <div className='sensor-entry'>
+  //         <h3 className='sensor-title'>pH</h3>
+  //         <Link to={`/ph`}>
+  //           <div className={getSensorClasses(sensor.ph, user_params_ph[0], user_params_ph[1], user_params_ph[2], user_params_ph[3])}>
+  //             <p>{sensor.ph}</p>
+  //           </div>
+  //         </Link>
+  //       </div>
 
-        <div className='sensor-entry'>
-          <h3 className='sensor-title'>TDS</h3>
-          <Link to={`/tds`}>
-            <div className={getSensorClasses(sensor.tds, user_params_tds[0], user_params_tds[1], user_params_tds[2], user_params_tds[3])}>
-              <p>{sensor.tds} ppm</p>
-            </div>
-          </Link>
-        </div>
-      </div>
-    )
-  } else {
-    return (
-      <div>
-        <p>Cannot fetch sensor data...</p>
-      </div>
-    )
-=======
-  if (loading) {
-    return <p>Cannot fetch sensor data...</p>
->>>>>>> 385bcc8beb7ba7e426c332354c70f24c8eb8e835
-  }
+  //       <div className='sensor-entry'>
+  //         <h3 className='sensor-title'>TDS</h3>
+  //         <Link to={`/tds`}>
+  //           <div className={getSensorClasses(sensor.tds, user_params_tds[0], user_params_tds[1], user_params_tds[2], user_params_tds[3])}>
+  //             <p>{sensor.tds} ppm</p>
+  //           </div>
+  //         </Link>
+  //       </div>
+  //     </div>
+  //   )
+  // } else {
+  //   return (
+  //     <div>
+  //       <p>Cannot fetch sensor data...</p>
+  //     </div>
+  //   )
+  // }
 
   if (error) {
     return <p>{error}</p>

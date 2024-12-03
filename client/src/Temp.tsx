@@ -94,10 +94,6 @@ export function Temp() {
   const [sliderValueAlert, setSliderValueAlert] = useState<number[]>([40, 60]);
   const [reloadGraph, setReloadGraph] = useState<boolean>(false);
 
-  // useEffect(() => {
-    
-  // }, []); //occurs on-load of Temp page
-
   const handleSliderChangeWarn = (newValue: number[]) => {
     console.log("change", newValue);
     setSliderValueWarn(newValue); // Update the state with the new value
@@ -150,26 +146,6 @@ export function Temp() {
   // setInterval(fetchData, 5000);
 
   useEffect(() => {
-    // const fetchSliderValue = async () => {
-    //   const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
-    //   const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
-    //   const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
-    //   const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
-    //   setSliderValueWarn([tempWarnMin, tempWarnMax]);
-    //   setSliderValueAlert([tempAlertMin, tempAlertMax]);
-    // };
-
-    // fetchSliderValue();
-
-    // fetchData();
-    const fetchAllData = async () => {
-      // Fetch slider values first
-      await fetchSliderValue();
-  
-      // Then fetch other data
-      fetchData();
-    };
-
     const fetchSliderValue = async () => {
       try {
         const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
@@ -182,6 +158,13 @@ export function Temp() {
         console.error('Error fetching slider values:', error);
       }
     };
+    const fetchAllData = async () => {
+      // Fetch slider values first
+      await fetchSliderValue();
+      // Then fetch other data
+      fetchData();
+    };
+
 
     fetchAllData();
   }, []);
@@ -217,6 +200,16 @@ export function Temp() {
       }
       return 'yellow'; // Blue border for in range
     });
+
+    // const lineColor = chartData.map(point => {
+    //   if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
+    //     return 'darkred'; // Dark red border for out of range
+    //   } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
+    //     return 'orange'; // Orange border for boundary
+    //   } else {
+    //     return 'green'; // Orange border for boundary
+    //   }
+    // });
 
     // const lineColor = chartData.some(point => point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) ? 'red' : 'green';
 

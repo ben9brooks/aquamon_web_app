@@ -89,18 +89,29 @@ export function PH() {
   const [maxY, setMaxY] = useState<number>(-Infinity);
   const [sliderValueWarn, setSliderValueWarn] = useState<number[]>([10, 12]);
   const [sliderValueAlert, setSliderValueAlert] = useState<number[]>([10, 12]);
+  const [reloadGraph, setReloadGraph] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchSliderValue = async () => {
-      const phWarnMin = await get_parameter_value(0, 'ph_warn_min');
-      const phWarnMax = await get_parameter_value(0, 'ph_warn_max');
-      const phAlertMin = await get_parameter_value(0, 'ph_alert_min');
-      const phAlertMax = await get_parameter_value(0, 'ph_alert_max');
-      setSliderValueWarn([phWarnMin, phWarnMax]);
-      setSliderValueAlert([phAlertMin, phAlertMax]);
+      try {
+        const phWarnMin = await get_parameter_value(0, 'ph_warn_min');
+        const phWarnMax = await get_parameter_value(0, 'ph_warn_max');
+        const phAlertMin = await get_parameter_value(0, 'ph_alert_min');
+        const phAlertMax = await get_parameter_value(0, 'ph_alert_max');
+        setSliderValueWarn([phWarnMin, phWarnMax]);
+        setSliderValueAlert([phAlertMin, phAlertMax]);
+      } catch (error) {
+        console.error('Error fetching slider values:', error);
+      }
+    };
+    const fetchAllData = async () => {
+      // Fetch slider values first
+      await fetchSliderValue();
+      // Then fetch other data
+      fetchData();
     };
 
-    fetchSliderValue();
+    fetchAllData();
   }, []); //occurs on-load of pH page
 
   const handleSliderChangeWarn = (newValue: number[]) => {
@@ -117,7 +128,7 @@ export function PH() {
     const data = await response.json()
     console.log('data', data)
 
-    // Assuming data is an array of { temp, timestamp }
+    // Assuming data is an array of { ph, timestamp }
     const formattedData = data.map((item: { ph: number, timestamp: number }) => ({
       x: new Date(item.timestamp),
       y: item.ph,
@@ -127,17 +138,17 @@ export function PH() {
     let localMaxY = -Infinity;
 
     for (let i = 0; i < formattedData.length; i++) {
-      let temp = formattedData[i].y;
-      // console.log(temp)
+      let ph = formattedData[i].y;
+      // console.log(ph)
     
-      // Update minTemp if the current temperature is lower
-      if (temp < localMinY) {
-        localMinY = temp;
+      // Update minph if the current ph is lower
+      if (ph < localMinY) {
+        localMinY = ph;
       }
     
-      // Update maxTemp if the current temperature is higher
-      if (temp > localMaxY) {
-        localMaxY = temp;
+      // Update maxph if the current pherature is higher
+      if (ph > localMaxY) {
+        localMaxY = ph;
       }
     }
 
@@ -151,7 +162,8 @@ export function PH() {
 
     // console.log(formattedData)
     console.log('min', timeMin);
-    setChartData(formattedData)
+    setChartData(formattedData);
+    setReloadGraph(!reloadGraph);
   }
   
   // setInterval(fetchData, 5000);
@@ -255,7 +267,7 @@ export function PH() {
         chartInstanceRef.current.destroy()
       }
     }
-  }, [chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert])
+  }, [reloadGraph])//[chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert])
 
   // const myChart = new Chart(
   //   document.getElementById('deez'),
@@ -315,16 +327,16 @@ export function PH() {
           {/* <img src='../public/images/next.png' alt='no img' /> */}
           <img src= {chevron} alt='no img' />
         </Link>
-        <h2 className='sensor-page-title'>Temperature</h2>
+        <h2 className='sensor-page-title'>pH</h2>
         <div className='hover-container'>
           <img id="myBtn" src={settings} onClick={() => {modal!.style.display = "block";}}/>
         </div>
         {/* <button id="myBtn" onClick={() => {modal!.style.display = "block";}}>Open Modal</button> */}
       </div>
       <div className='btn-row'>
-        <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
-        <button id='day-btn' className='time-btn' onClick={() => {setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
-        <button id='week-btn' className='time-btn' onClick={() => {setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
+        <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
+        <button id='day-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
+        <button id='week-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
       </div>
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
         <canvas ref={chartRef} className='graph'></canvas>
@@ -352,7 +364,7 @@ export function PH() {
             </div>
           </div>
         </div>
-        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); modal!.style.display = "none"}}>Submit</button>
+        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); modal!.style.display = "none"; setReloadGraph(!reloadGraph);}}>Submit</button>
       </div>
     </div>
     </>

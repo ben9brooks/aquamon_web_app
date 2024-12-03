@@ -26,13 +26,15 @@ async function fetchDataAndStore() {
   let output = [];
   try {
     const response = await fetch(
-      "https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors"
+      // "https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors"
+      "http://172.20.10.7/sensors"
     );
     if (!response.ok) {
       throw new Error(`Network response was not ok: ${response.statusText}`);
     }
     const data = await response.json();
-    // console.log(data);
+
+    console.log(data);
 
     const timestamp = Math.floor(new Date().getTime()); // Get current date/time in ISO format IN SECONDS
     console.log(timestamp);
@@ -50,16 +52,28 @@ async function fetchDataAndStore() {
       INSERT INTO tds (tds, timestamp) VALUES (?, ?)
     `);
 
-    // Assuming the data is an array of sensor readings
-    for (const item of data) {
-      insertTemp.run(item.temp, timestamp);
-      output.push([item.temp, timestamp]);
-
-      insertPh.run(item.ph, timestamp);
-      output.push([item.ph, timestamp]);
-
-      insertTDS.run(item.tds, timestamp);
-      output.push([item.tds, timestamp]);
+    let currentlyCallingArduino = true;
+    if (!currentlyCallingArduino) {
+      // Assuming the data is an array of sensor readings
+      for (const item of data) {
+        insertTemp.run(item.temp, timestamp);
+        output.push([item.temp, timestamp]);
+  
+        insertPh.run(item.ph, timestamp);
+        output.push([item.ph, timestamp]);
+  
+        insertTDS.run(item.tds, timestamp);
+        output.push([item.tds, timestamp]);
+      }
+    } else {
+      insertTemp.run(data.temp, timestamp);
+        output.push([data.temp, timestamp]);
+  
+        insertPh.run(data.ph, timestamp);
+        output.push([data.ph, timestamp]);
+  
+        insertTDS.run(data.tds, timestamp);
+        output.push([data.tds, timestamp]);
     }
 
     console.log("Data inserted successfully");
