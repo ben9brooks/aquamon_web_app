@@ -10,6 +10,8 @@ require('dotenv').config();
 
 const app = express();
 const port = 5001;
+const currentlyCallingArduino = false;
+     
 
 // Enable CORS for all routes or limit it to specific origins
 app.use(cors({
@@ -26,8 +28,8 @@ async function fetchDataAndStore() {
   let output = [];
   try {
     const response = await fetch(
-      // "https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors"
-      "http://172.20.10.7/sensors"
+      "https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors"
+      // "http://172.20.10.7/sensors"
     );
     if (!response.ok) {
       throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -52,7 +54,7 @@ async function fetchDataAndStore() {
       INSERT INTO tds (tds, timestamp) VALUES (?, ?)
     `);
 
-    let currentlyCallingArduino = true;
+    //check global var
     if (!currentlyCallingArduino) {
       // Assuming the data is an array of sensor readings
       for (const item of data) {

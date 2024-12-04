@@ -229,6 +229,7 @@ export function Temp() {
       datasets: [dataset],
     };
 
+    console.log(data);
 
     chartInstanceRef.current = new Chart(ctx, {
       type: 'line',
