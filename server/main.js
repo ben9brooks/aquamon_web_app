@@ -10,7 +10,8 @@ require('dotenv').config();
 
 const app = express();
 const port = 5001;
-const currentlyCallingArduino = false;
+const currentlyCallingArduino = false; //false if calling mock api, true if calling arduino
+const arduinoIP = "http://172.20.10.7";
      
 
 // Enable CORS for all routes or limit it to specific origins
@@ -27,10 +28,14 @@ const db = Database("database.db");
 async function fetchDataAndStore() {
   let output = [];
   try {
-    const response = await fetch(
-      "https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors"
-      // "http://172.20.10.7/sensors"
-    );
+    let response = null;
+
+    if (currentlyCallingArduino) {
+      response = await fetch(arduinoIP + "/sensors");
+    } else {
+      response = await fetch("https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors");
+    }
+
     if (!response.ok) {
       throw new Error(`Network response was not ok: ${response.statusText}`);
     }
