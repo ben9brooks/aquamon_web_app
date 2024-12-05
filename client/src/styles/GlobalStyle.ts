@@ -452,4 +452,10 @@ export const GlobalStyle = createGlobalStyle`
     height: 60px;
     transform: translate(-50%, -50%) scale(1); /* Fully visible and centered */
   }
+
+  .bot-left {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+  }
   `

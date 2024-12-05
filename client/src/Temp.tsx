@@ -2,69 +2,17 @@ import React, { useEffect, useRef, useState } from 'react'
 import Chart from 'chart.js/auto'
 import { Link } from 'react-router-dom'
 import { GlobalStyle } from './styles/GlobalStyle'
-import * as Utils from './/scripts/utils.js'
 import 'chartjs-adapter-date-fns';
-import { config } from 'webpack'
 import chevron from '../public/images/next.png';
 import settings from '../public/images/settings.png';
 import RangeSlider from './components/RangeSlider'
+import { make_time_title, fetch_slider_then_graph_data, make_colors, upload_parameters, create_chart_config } from './sensor_helpers/Sensor_Helper'; //import funcs
 
-const hourTitle = "Temperature Over the Last Hour"
-const dayTitle = "Temperature Over the Last Day"
-const weekTitle = "Temperature Over the Last Week"
-
-// function valuetext(value: number) {
-//   return `${value}°C`;
-// }
-interface SliderData {
-  temp_warn_min: number;
-  temp_warn_max: number;
-  temp_alert_min: number;
-  temp_alert_max: number;
-  ph_warn_min: number, 
-  ph_warn_max: number,
-  ph_alert_min: number, 
-  ph_alert_max: number,
-  tds_warn_min: number, 
-  tds_warn_max: number,
-  tds_alert_min: number, 
-  tds_alert_max: number
-}
-
-class SliderDataConstructor implements SliderData {
-  temp_warn_min: number;
-  temp_warn_max: number;
-  temp_alert_min: number;
-  temp_alert_max: number;
-  ph_warn_min: number;
-  ph_warn_max: number;
-  ph_alert_min: number;
-  ph_alert_max: number;
-  tds_warn_min: number;
-  tds_warn_max: number;
-  tds_alert_min: number;
-  tds_alert_max: number;
-
-  constructor(
-    temp_warn_min: number,
-    temp_warn_max: number,
-    temp_alert_min: number,
-    temp_alert_max: number
-  ) {
-    this.temp_warn_min = temp_warn_min;
-    this.temp_warn_max = temp_warn_max;
-    this.temp_alert_min = temp_alert_min;
-    this.temp_alert_max = temp_alert_max;
-    this.ph_warn_min = -100; //invalid, or Do Not Update
-    this.ph_warn_max = -100;
-    this.ph_alert_min = -100;
-    this.ph_alert_max = -100;
-    this.tds_warn_min = -100;
-    this.tds_warn_max = -100;
-    this.tds_alert_min = -100;
-    this.tds_alert_max = -100;
-  }
-}
+// parameters to mock:
+const temp_min = 80;
+const temp_max = 90;
+const interval_min = 10;
+const time_frame = 7 * 24; // 1 week in hours
 
 function set_button_press_style(type: string) {
   //when a button is clicked, set that one as the 'pressed' style, and change the others to be lifted up.
@@ -74,12 +22,6 @@ function set_button_press_style(type: string) {
   document.getElementById(type)!.className = 'time-btn time-pressed';
 }
 
-async function get_parameter_value(userId: number, name: string): Promise<number> {
-  const response = await fetch(`http://localhost:5001/user-parameters/${userId}/${name}`);
-  const data = await response.json();
-  return data[0][name];
-}
-
 export function Temp() {
   const chartRef = useRef<HTMLCanvasElement | null>(null)
   const chartInstanceRef = useRef<Chart | null>(null) // To store the chart instance
@@ -87,7 +29,7 @@ export function Temp() {
   const [timeUnit, setTimeUnit] = useState<'hour' | 'day' | 'week'>('hour');
   const [timeMin, setTimeMin] = useState<string | number | undefined>(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString());
   const [timeMax, setTimeMax] = useState<string | number | undefined>( new Date().toString());
-  const [graphTitle, setGraphTitle] = useState(hourTitle)
+  const [graphTitle, setGraphTitle] = useState(make_time_title("Temperature", "Hour"));
   const [minY, setMinY] = useState<number>(Infinity);
   const [maxY, setMaxY] = useState<number>(-Infinity);
   const [sliderValueWarn, setSliderValueWarn] = useState<number[]>([40, 60]);
@@ -102,76 +44,11 @@ export function Temp() {
     setSliderValueAlert(newValue); // Update the state with the new value
   };
 
-  async function fetchData() {
-    const response = await fetch('http://localhost:5001/temp-data') // Assuming you have a backend route for this
-    const data = await response.json()
-    // console.log('data', data)
-
-    // Assuming data is an array of { temp, timestamp }
-    const formattedData = data.map((item: { temp: number, timestamp: number }) => ({
-      x: new Date(item.timestamp),
-      y: item.temp,
-    }))
-
-    let localMinY = Infinity;
-    let localMaxY = -Infinity;
-
-    for (let i = 0; i < formattedData.length; i++) {
-      let temp = formattedData[i].y;
-      // console.log(temp)
-    
-      // Update minTemp if the current temperature is lower
-      if (temp < localMinY) {
-        localMinY = temp;
-      }
-    
-      // Update maxTemp if the current temperature is higher
-      if (temp > localMaxY) {
-        localMaxY = temp;
-      }
-    }
-
-    // round max up to the next 5 and min to the bottom 5.
-    localMaxY = Math.floor(localMaxY / 5) * 5;
-    localMaxY = localMaxY + 5;
-    localMinY = Math.floor(localMinY / 5) * 5;
-    localMinY = localMinY - 5;  
-    setMaxY(localMaxY);
-    setMinY(localMinY);
-
-    setChartData(formattedData);
-    setReloadGraph(!reloadGraph);
-  }
-  
-  // setInterval(fetchData, 5000);
-
   useEffect(() => {
-    const fetchSliderValue = async () => {
-      try {
-        const tempWarnMin = await get_parameter_value(0, 'temp_warn_min');
-        const tempWarnMax = await get_parameter_value(0, 'temp_warn_max');
-        const tempAlertMin = await get_parameter_value(0, 'temp_alert_min');
-        const tempAlertMax = await get_parameter_value(0, 'temp_alert_max');
-        setSliderValueWarn([tempWarnMin, tempWarnMax]);
-        setSliderValueAlert([tempAlertMin, tempAlertMax]);
-      } catch (error) {
-        console.error('Error fetching slider values:', error);
-      }
-    };
-    const fetchAllData = async () => {
-      // Fetch slider values first
-      await fetchSliderValue();
-      // Then fetch other data
-      fetchData();
-    };
-
-
-    fetchAllData();
+    fetch_slider_then_graph_data('temp', setMaxY, setMinY, setChartData, setReloadGraph, reloadGraph, setSliderValueWarn, setSliderValueAlert);
   }, []);
 
   useEffect(() => {
-    // fetchData();
-
     if (!chartRef.current) return
 
     const ctx = chartRef.current.getContext('2d')
@@ -183,95 +60,11 @@ export function Temp() {
     }
 
     console.log('UPDATE', sliderValueAlert, sliderValueWarn);
-    const pointFillColors = chartData.map(point => {
-      if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
-        return 'red'; // Red fill for out of range
-      } else if (point.y > sliderValueWarn[0] && point.y < sliderValueWarn[1]) {
-        return 'green'; // Orange fill for boundary
-      }
-      return 'yellow'; // Green fill for in range
-    });
+    const pointFillColors = make_colors(chartData, sliderValueAlert, sliderValueWarn, 'red', 'green','yellow');
+    const pointBorderColors = make_colors(chartData, sliderValueAlert, sliderValueWarn, 'darkred', 'green','yellow');
 
-    const pointBorderColors = chartData.map(point => {
-      if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
-        return 'darkred'; // Dark red border for out of range
-      } else if (point.y > sliderValueWarn[0] && point.y < sliderValueWarn[1]) {
-        return 'green'; // Orange border for boundary
-      }
-      return 'yellow'; // Blue border for in range
-    });
-
-    // const lineColor = chartData.map(point => {
-    //   if (point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) {
-    //     return 'darkred'; // Dark red border for out of range
-    //   } else if ( (point.y < sliderValueWarn[0] && point.y > sliderValueAlert[0]) || (point.y > sliderValueWarn[1] && point.y < sliderValueAlert[1]) ) {
-    //     return 'orange'; // Orange border for boundary
-    //   } else {
-    //     return 'green'; // Orange border for boundary
-    //   }
-    // });
-
-    // const lineColor = chartData.some(point => point.y < sliderValueAlert[0] || point.y > sliderValueAlert[1]) ? 'red' : 'green';
-
-    const dataset = {
-      label: 'Temperature',
-      data: chartData,
-      // borderColor: lineColor, 
-      borderWidth: 1,
-      borderColor: 'black',
-      pointBackgroundColor: pointFillColors,
-      pointBorderColor: pointBorderColors,
-      pointBorderWidth: 2,
-      fill: false,
-    };
-
-    const data = {
-      datasets: [dataset],
-    };
-
-    console.log(data);
-
-    chartInstanceRef.current = new Chart(ctx, {
-      type: 'line',
-      data: data,
-      options: {
-        scales: {
-          x: {
-            offset: false,
-            type: 'time', 
-            title: {
-              display: true,
-              text: 'Timestamp',
-            },
-            time: {
-              unit: timeUnit,
-              // tooltipFormat: 'MMM dd, yyyy',
-            },
-            min: timeMin,
-            max: timeMax,
-          },
-          y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: 'Temperature'
-            },
-            min: minY,
-            max: maxY,
-          },
-        },
-        responsive: true,
-        plugins: {
-          legend: {
-            position: 'top',
-          },
-          title: {
-            display: true,
-            text: graphTitle
-          }
-        }
-      },
-    })
+    chartInstanceRef.current = new Chart(ctx, create_chart_config(chartData, pointFillColors, pointBorderColors, timeUnit, timeMin, timeMax, minY, maxY, graphTitle));
+   
     // Cleanup function to destroy the chart when the component unmounts
     return () => {
       if (chartInstanceRef.current) {
@@ -280,35 +73,7 @@ export function Temp() {
     }
   }, [reloadGraph]) //[chartData, timeUnit, timeMin, graphTitle, minY, maxY, sliderValueWarn, sliderValueAlert]) //could prevent twitching by removing slider vars with new one on submit click
 
-  // const myChart = new Chart(
-  //   document.getElementById('deez'),
-  //   config
-  // )
-
-  // function dateFilter(time: 'hour' | 'day' | 'week') {
-  //   setTimeUnit(time);
-  //   console.log(chartInstanceRef.current)
-  //   chartInstanceRef.current?.update();
-  // }
-  // console.log("About to return graph..", minY, maxY)
-
   var modal = document.getElementById("myModal");
-
-  // Get the button that opens the modal
-  var btn = document.getElementById("myBtn");
-
-  // Get the <span> element that closes the modal
-  var span = document.getElementsByClassName("close")[0];
-
-  // When the user clicks on the button, open the modal
-  // btn!.onclick = function() {
-  //   modal!.style.display = "block";
-  // }
-
-  // // When the user clicks on <span> (x), close the modal
-  // span.onclick = function() {
-  //   modal.style.display = "none";
-  // }
 
   // When the user clicks anywhere outside of the modal, close it
   window.onclick = function(event) {
@@ -317,29 +82,25 @@ export function Temp() {
     }
   }
 
-  const upload_parameters = async (userId: number, updatedDataWarn: number[], updatedDataAlert: number[] ): Promise<void> => {
-    const newJohn = new SliderDataConstructor(updatedDataWarn[0], updatedDataWarn[1], updatedDataAlert[0], updatedDataAlert[1])    
-    console.log("submit press", newJohn);
-    console.log(JSON.stringify(newJohn)); 
+  const mock_data = async() => {
     try {
-      const response = await fetch(`http://localhost:5001/upload-user-parameters/${userId}`, {
-        method: 'PUT', // Specify the method
+      const response = await fetch(`http://localhost:5001/mock/temp`, {
+        method: 'PUT',
         headers: {
-          'Content-Type': 'application/json', // Specify the content type
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newJohn), // Convert the data to JSON
+        body: JSON.stringify([temp_min, temp_max, interval_min, time_frame]),
       });
-  
+
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        throw new Error(`HTTP error while trying to mock data! Status: ${response.status}`);
       }
-  
-      const result = await response.json(); // If you expect a response body
-      console.log('Update successful:', result);
-    } catch (error) {
-      console.error('Error updating user parameters:', error);
+
+      console.log("Mock data successful");
+    } catch {
+      console.log("Error while contacting back end to mock data");
     }
-  }
+  };
 
   return (
     <>
@@ -348,19 +109,17 @@ export function Temp() {
 
       <div className='graph-title-row'>
         <Link to={`/main_window`} className='button-40'>
-          {/* <img src='../public/images/next.png' alt='no img' /> */}
           <img src= {chevron} alt='no img' />
         </Link>
         <h2 className='sensor-page-title'>Temperature</h2>
         <div className='hover-container'>
           <img id="myBtn" src={settings} onClick={() => {modal!.style.display = "block";}}/>
         </div>
-        {/* <button id="myBtn" onClick={() => {modal!.style.display = "block";}}>Open Modal</button> */}
       </div>
       <div className='btn-row'>
-        <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(hourTitle); set_button_press_style('hour-btn')}}>Hour</button>
-        <button id='day-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(dayTitle); set_button_press_style('day-btn')}}>Day</button>
-        <button id='week-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(weekTitle); set_button_press_style('week-btn')}}>Week</button>
+        <button id='hour-btn' className='time-btn time-pressed' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('hour'); setTimeMin(new Date(new Date().getTime() - 1 * 60 * 60 * 1000).toISOString()); setGraphTitle(make_time_title("Temperature", "Hour")); set_button_press_style('hour-btn')}}>Hour</button>
+        <button id='day-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('day'); setTimeMin(new Date(new Date().getTime() - 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(make_time_title("Temperature", "Day")); set_button_press_style('day-btn')}}>Day</button>
+        <button id='week-btn' className='time-btn' onClick={() => {setReloadGraph(!reloadGraph); setTimeUnit('week'); setTimeMin(new Date(new Date().getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()); setGraphTitle(make_time_title("Temperature", "Week")); set_button_press_style('week-btn')}}>Week</button>
       </div>
       <div className="canvas-bkg" style={{ backgroundColor: 'white' }}>
         <canvas ref={chartRef} className='graph'></canvas>
@@ -389,9 +148,11 @@ export function Temp() {
             </div>
           </div>
         </div>
-        <button className='submit-param-btn' onClick={() => {upload_parameters(0, sliderValueWarn, sliderValueAlert); setReloadGraph(!reloadGraph); modal!.style.display = "none";}}>Submit</button>
+        <button className='submit-param-btn' onClick={() => {upload_parameters('temp', 0, sliderValueWarn, sliderValueAlert); setReloadGraph(!reloadGraph); modal!.style.display = "none";}}>Submit</button>
       </div>
-
+      <button onClick={mock_data} className='bot-left'>
+        Mock
+      </button>
     </div>
     </>
   )

@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext';
 import deez from '../public/images/underwater.png';
 import logoutPNG from '../public/images/logout.png'
 
-const arduinoAddress = 'http://192.168.0.175/sensors';
+const arduinoAddress = 'http://192.168.0.175';
 
 interface Sensors {
   temp: number
@@ -51,7 +51,6 @@ const dummyUserParams: UserParams = {
 }
 
 export async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
-  const addr = 'http://172.20.10.7/sensors'
   const mockAddr = 'https://66cca760a4dd3c8a71b860e1.mockapi.io/sensors'
   console.log('Debug Mode is', isDebug)
   if (isDebug) {
@@ -63,8 +62,8 @@ export async function fetchSensorData(isDebug: boolean): Promise<Sensors> {
     }
   } else {
     try {
-      console.log('fetching', addr)
-      const response = await fetch(addr)
+      console.log('fetching', arduinoAddress)
+      const response = await fetch(arduinoAddress + "/sensors")
       if (response.status >= 200 && response.status < 300) {
         const data = await response.json()
         return data
