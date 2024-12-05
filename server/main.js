@@ -6,12 +6,13 @@ const { time } = require("console");
 const cors = require('cors');
 const nodemailer = require("nodemailer");
 require('dotenv').config();
-// const moment = require("moment"); // Or use the Date object directly!!!!!!
 
 const app = express();
 const port = 5001;
 const currentlyCallingArduino = false; //false if calling mock api, true if calling arduino
 const arduinoIP = "http://172.20.10.7";
+const userEmail = "bdbfvr@umsystem.edu"; //alert emails will be sent here
+const backEndAddress = "http://localhost:5001"; 
      
 
 // Enable CORS for all routes or limit it to specific origins
@@ -85,24 +86,27 @@ async function fetchDataAndStore() {
 
     console.log("Data inserted successfully");
     // check if fetched values are at dangerous levels
-    const response2 = await fetch(`http://localhost:5001/user-parameters/${0}`);
-    const user_param = await response2.json();
+    // const response2 = await fetch(`http://localhost:5001/user-parameters/${0}`);
+    // const user_param = await response2.json();
+    const user_param = db.prepare('SELECT * FROM user_parameters WHERE user_id = 0').all()[0];
+    // const user_param = response2.json();
+
   
     const email = db.prepare('SELECT email FROM user WHERE id = ?').all(0);
   
-    if( data[0].temp < user_param[0].temp_alert_min || data[0].temp > user_param[0].temp_alert_max) {
-      sendAlertEmail('Temperature', data[0].temp, email);
+    if( data[0].temp < user_param.temp_alert_min || data[0].temp > user_param.temp_alert_max) {
+      sendAlertEmail('Temperature', data[0].temp, userEmail);
       console.log("temp alert email");
     }
-    console.log(data[0].ph, user_param[0].ph_alert_max, user_param[0].ph_alert_min);
+    console.log(data[0].ph, user_param.ph_alert_max, user_param.ph_alert_min);
     
-    if( data[0].ph < user_param[0].ph_alert_min || data[0].ph > user_param[0].ph_alert_max) {
+    if( data[0].ph < user_param.ph_alert_min || data[0].ph > user_param.ph_alert_max) {
       console.log("ph alert email");
-      sendAlertEmail('pH', data[0].ph, email);
+      sendAlertEmail('pH', data[0].ph, userEmail);
     }
-    if( data[0].tds < user_param[0].tds_alert_min || data[0].tds > user_param[0].tds_alert_max) {
-      //sendAlertEmail('TDS', data.tds, email);
-      sendAlertEmail('TDS', data[0].tds, 'gdobbelare4@gmail.com');
+    if( data[0].tds < user_param.tds_alert_min || data[0].tds > user_param.tds_alert_max) {
+      //sendAlertEmail('TDS', data[0].tds, email);
+      sendAlertEmail('TDS', data[0].tds, userEmail);
       console.log("tds alert email");
     }
   } catch (error) {
@@ -248,3 +252,47 @@ async function sendAlertEmail(sensorType, value, email) {
     console.error('Error sending email:', error);
   }
 }
+
+app.put('/mock/:sensor', (req, res) => {
+  const sensorType = req.params.sensor;
+  const parameters = req.body; //of format [low_range, high_range, interval (in min), time_frame (in hours)]
+  console.log("Received", sensorType, parameters);
+
+  const data = [];
+  // generate sine wave data based on low, high, interval, and time_frame
+  const low = parameters[0];
+  const high = parameters[1];
+  const interval = parameters[2];
+  const time_frame = parameters[3];
+  const num_points = (time_frame * 60) / interval;
+  const now = Date.now();
+  const time_start = Date.now() - (time_frame * 60 * 60 * 1000);
+  const time_step = interval * 60 * 1000;
+  for (let i = 0; i < num_points; i++) {
+    const t = time_start + (i * time_step);
+    const value = (high - low) / 2 * Math.sin(2 * Math.PI * i / num_points) + (high + low) / 2;
+    data.push([value, t]);
+  }
+
+  // first, delete all previous data:
+  generate_lt_delete_query(sensorType, now).run();
+
+  const insertStmt = db.prepare(`INSERT INTO ${sensorType} (${sensorType}, timestamp) VALUES (?, ?)`);
+  
+  try {
+    db.transaction(() => {
+      data.forEach(([value, timestamp]) => {
+        console.log(value, timestamp);
+        try {
+          insertStmt.run(value, timestamp);
+        } catch {
+          console.log("Failed to insert mock data", value, timestamp);
+        }
+      })
+    })();
+    console.log("Data mocked");
+
+  } catch (transactionError) {
+    console.log("DB Mock failed", transactionError);
+  }
+})
