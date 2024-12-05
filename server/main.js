@@ -12,7 +12,6 @@ const port = 5001;
 const currentlyCallingArduino = false; //false if calling mock api, true if calling arduino
 const arduinoIP = "http://172.20.10.7";
 const userEmail = "bdbfvr@umsystem.edu"; //alert emails will be sent here
-const backEndAddress = "http://localhost:5001"; 
      
 
 // Enable CORS for all routes or limit it to specific origins

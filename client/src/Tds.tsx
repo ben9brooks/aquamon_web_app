@@ -7,6 +7,7 @@ import chevron from '../public/images/next.png';
 import settings from '../public/images/settings.png';
 import RangeSlider from './components/RangeSlider'
 import { make_time_title, fetch_slider_then_graph_data, make_colors, upload_parameters, create_chart_config } from './sensor_helpers/Sensor_Helper'; //import funcs
+import { backendAddress } from './App';
 
 // parameters to mock:
 const tds_min = 80;
@@ -86,7 +87,7 @@ export function Tds() {
 
   const mock_data = async() => {
     try {
-      const response = await fetch(`http://localhost:5001/mock/tds`, {
+      const response = await fetch(`${backendAddress}/mock/tds`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

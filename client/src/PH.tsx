@@ -9,6 +9,7 @@ import chevron from '../public/images/next.png';
 import settings from '../public/images/settings.png';
 import RangeSlider from './components/RangeSlider'
 import { make_time_title, fetch_slider_then_graph_data, make_colors, upload_parameters, create_chart_config } from './sensor_helpers/Sensor_Helper'; //import funcs
+import { backendAddress } from './App';
 
 // parameters to mock:
 const ph_min = 8;
@@ -22,12 +23,6 @@ function set_button_press_style(type: string) {
   document.getElementById('day-btn')!.className = "time-btn";
   document.getElementById('week-btn')!.className = "time-btn";
   document.getElementById(type)!.className = 'time-btn time-pressed';
-}
-
-async function get_parameter_value(userId: number, name: string): Promise<number> {
-  const response = await fetch(`http://localhost:5001/user-parameters/${userId}/${name}`);
-  const data = await response.json();
-  return data[0][name];
 }
 
 export function PH() {
@@ -92,7 +87,7 @@ export function PH() {
 
   const mock_data = async() => {
     try {
-      const response = await fetch(`http://localhost:5001/mock/ph`, {
+      const response = await fetch(`${backendAddress}/mock/ph`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

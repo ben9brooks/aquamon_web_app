@@ -7,6 +7,7 @@ import deez from '../public/images/underwater.png';
 import logoutPNG from '../public/images/logout.png'
 
 const arduinoAddress = 'http://192.168.0.175';
+export const backendAddress = 'http://localhost:5001';
 
 interface Sensors {
   temp: number
